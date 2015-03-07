@@ -1,0 +1,11 @@
+{
+    "applications": {
+        "_default": {
+            "link": "loginTest"
+        }, 
+        "loginTest": {
+            "applicationId": "5N1zo8DBnukiwCvOwuSiXByNtVNefFr7DS6YKvoy", 
+            "masterKey": "hQjY8JmyR4WZywm1iIFq0gy1WWbVO79hbv4CP08C"
+        }
+    }
+}
