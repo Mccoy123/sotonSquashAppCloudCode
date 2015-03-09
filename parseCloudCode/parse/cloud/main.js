@@ -19,26 +19,26 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 //User opt in/out of leaderboard
    Parse.Cloud.define("joinLeaderboard", function(request, response) {
 		//set the leaderboard flag to true
-	   var currentUser = Parse.User.current();
-	   currentUser.set("Leaderboard", true);
-	   currentUser.save();
-	   var AddLeaderboard = Parse.Object.extend("LeaderBoard");	
-	   
-	    var AddLeaderboard = Parse.Object.extend("LeaderBoard");	
+	    var currentUser = Parse.User.current();
+	    currentUser.set("Leaderboard", true); //sets the leaderboard flag to true indicating they are in the leaderboard
+	    currentUser.save();
+		
+		//Add user to the leaderboard
+	    var AddLeaderboard = Parse.Object.extend("LeaderBoard");		
 		var query = new Parse.Query(AddLeaderboard);
-		query.notEqualTo("Ranking", 0);
+		query.notEqualTo("Ranking", 0); //returns all objects in leaderboard intentionally left as 0 as could be used for ghosting players
 		query.count().then(function(count) {
 				//success
 				console.log(count);
-				return count;
+				return count; //so can be accessed in next promise
 			}).then (function(count) {
 				var currentUser = Parse.User.current();
 				var addLeaderboard = new AddLeaderboard();
-				var newPlayerRanking = count + 1;
+				var newPlayerRanking = count + 1; //so new player is bottom of leaderboard
 				addLeaderboard.save({Ranking: newPlayerRanking, playerID: currentUser}, {
 				   success: function(object) {
 						console.log("User added to the leaderboard55");
-						response.success("Learderboard Joined!!")
+						response.success("Learderboard Joined!!") //this is sent back to client
 					  },
 					  error: function(model, error) {
 						console.error("Error User could not be added to the leaderboard");
@@ -46,8 +46,8 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 				  });
 			}, function(error) {
 				//error
-				console.log("error5");
-				response.error("error5");
+				console.log("User could not be added to the leaderboard");
+				response.error("User could not be added to the leaderboard"); //sent back to client if an eror occurs
 			});
 	});
 
