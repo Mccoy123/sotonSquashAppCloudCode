@@ -16,7 +16,7 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
   }
 });
 
-//User opt in/out of leaderboard
+//User opt in of leaderboard
    Parse.Cloud.define("joinLeaderboard", function(request, response) {
 		//set the leaderboard flag to true
 	    var currentUser = Parse.User.current();
@@ -37,7 +37,7 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 				var newPlayerRanking = count + 1; //so new player is bottom of leaderboard
 				addLeaderboard.save({Ranking: newPlayerRanking, playerID: currentUser}, {
 				   success: function(object) {
-						console.log("User added to the leaderboard55");
+						console.log("User added to the leaderboard!!");
 						response.success("Learderboard Joined!!") //this is sent back to client
 					  },
 					  error: function(model, error) {
@@ -49,5 +49,70 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 				console.log("User could not be added to the leaderboard");
 				response.error("User could not be added to the leaderboard"); //sent back to client if an eror occurs
 			});
+		});
+		
+//User opt out of leaderboard
+   Parse.Cloud.define("leaveLeaderboard", function(request, response) {
+		//set the leaderboard flag to true
+	    var currentUser = Parse.User.current();
+	    currentUser.set("Leaderboard", false); //sets the leaderboard flag to false indicating they are not in the leaderboard
+	    currentUser.save();
+		
+		//remove user to the leaderboard
+	    var Leaderboard = Parse.Object.extend("LeaderBoard");		
+		var query = new Parse.Query(Leaderboard);
+		query.equalTo("playerID", currentUser); //returns all objects in leaderboard intentionally left as not 0 as could be used for ghosting players
+		query.find().then(function(currentPlayerRank) {
+			//success
+			console.log(currentPlayerRank[0].get("Ranking"));
+			var playerRank = currentPlayerRank[0].get("Ranking");
+			var lessPlayerRank = new Parse.Query(Leaderboard);
+			lessPlayerRank.greaterThan("Ranking", playerRank);
+			return lessPlayerRank.find(); 
+		}).then(function (lessPlayerRank) {
+			for (var i = 0; i < lessPlayerRank.length; i++) {
+				var rank = lessPlayerRank[i].get("Ranking");
+				var updateRank = lessPlayerRank[i].set("Ranking", rank - 1);
+				console.log(rank - 1);
+				lessPlayerRank[i].save();
+			}
+			console.log("for loop ok");
+		}).then (function () {
+			var removePlayer = new Parse.Query(Leaderboard);
+			removePlayer.equalTo("playerID", currentUser); //returns all objects in leaderboard intentionally left as not 0 as could be used for ghosting players
+			return removePlayer.find()
+		}).then(function(removePlayer) {
+			//response.success(currentPlayerRank[0].id); //this is sent back to client
+			removePlayer[0].destroy({
+				success: function(removePlayer) {
+				  // The object was deleted from the Parse Cloud.
+				  console.log("The user was deleted from the leaderboard");
+				  response.success("You have been removed from the leaderboard") //this is sent back to client
+				},
+				error: function(removePlayer, error) {
+				  // The delete failed.
+				  console.error("Error: the user was not deleted from the leaderboard");
+				}
+			});
+			
+		/*}).then (function(count) {
+			var currentUser = Parse.User.current();
+			var addLeaderboard = new AddLeaderboard();
+			var newPlayerRanking = count + 1; //so new player is bottom of leaderboard
+			addLeaderboard.save({Ranking: newPlayerRanking, playerID: currentUser}, {
+			   success: function(object) {
+					console.log("User added to the leaderboard55");
+					response.success("Learderboard Joined!!") //this is sent back to client
+				  },
+				  error: function(model, error) {
+					console.error("Error User could not be added to the leaderboard");
+				  }
+			  });*/
+		}, function(error) {
+			//error
+			response.error("Error: you have not been deleted from the leaderboard");
+		});
 	});
+			
+		
 
