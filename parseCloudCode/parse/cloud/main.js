@@ -6,15 +6,14 @@ console.log("hello5");
 response.success("Doms Cloud Code");
 });
 
+//test function
 Parse.Cloud.beforeSave("MatchScore", function(request, response) {
-	//Insert code to update the leaderboards on ranking.
-	//difficult bit will be getting both players ranking
-  /*if (request.object.get("P10Score") > 3) {
+  if (request.object.get("P10Score") > 3) {
 	response.error("Games are first to 3");
     //return response.error(JSON.stringify({code: ErrorCodes["450"], message: "Games are first to 3"}));
   } else {
     response.success();
-  }*/
+  }
 });
 
 //AddResult Function
