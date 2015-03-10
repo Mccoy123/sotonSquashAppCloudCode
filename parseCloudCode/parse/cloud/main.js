@@ -6,16 +6,21 @@ console.log("hello5");
 response.success("Doms Cloud Code");
 });
 
-//test function
 Parse.Cloud.beforeSave("MatchScore", function(request, response) {
-  if (request.object.get("P10Score") > 3) {
+	//Insert code to update the leaderboards on ranking.
+	//difficult bit will be getting both players ranking
+  /*if (request.object.get("P10Score") > 3) {
 	response.error("Games are first to 3");
     //return response.error(JSON.stringify({code: ErrorCodes["450"], message: "Games are first to 3"}));
   } else {
     response.success();
-  }
+  }*/
 });
 
+//AddResult Function
+
+
+//My Profile functions
 //User opt in of leaderboard
    Parse.Cloud.define("joinLeaderboard", function(request, response) {
 		//set the leaderboard flag to true
@@ -31,25 +36,26 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 				//success
 				console.log(count);
 				return count; //so can be accessed in next promise
-			}).then (function(count) {
-				var currentUser = Parse.User.current();
-				var addLeaderboard = new AddLeaderboard();
-				var newPlayerRanking = count + 1; //so new player is bottom of leaderboard
-				addLeaderboard.save({Ranking: newPlayerRanking, playerID: currentUser}, {
-				   success: function(object) {
-						console.log("User added to the leaderboard!!");
-						response.success("Learderboard Joined!!") //this is sent back to client
-					  },
-					  error: function(model, error) {
-						console.error("Error User could not be added to the leaderboard");
-					  }
-				  });
-			}, function(error) {
-				//error
-				console.log("User could not be added to the leaderboard");
-				response.error("User could not be added to the leaderboard"); //sent back to client if an eror occurs
-			});
+		}).then (function(count) {
+			var currentUser = Parse.User.current();
+			var addLeaderboard = new AddLeaderboard();
+			var newPlayerRanking = count + 1; //so new player is bottom of leaderboard
+			addLeaderboard.save({Ranking: newPlayerRanking, playerID: currentUser}, {
+			   success: function(object) {
+					console.log("User added to the leaderboard!!");
+					response.success("Learderboard Joined!!") //this is sent back to client
+				  },
+				  error: function(model, error) {
+					console.error("Error User could not be added to the leaderboard");
+				  }
+			  });
+		}, function(error) {
+			//error
+			console.log("User could not be added to the leaderboard");
+			response.error("User could not be added to the leaderboard"); //sent back to client if an eror occurs
 		});
+	});
+//User opt in of leaderboard
 		
 //User opt out of leaderboard
    Parse.Cloud.define("leaveLeaderboard", function(request, response) {
@@ -94,25 +100,12 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 				  console.error("Error: the user was not deleted from the leaderboard");
 				}
 			});
-			
-		/*}).then (function(count) {
-			var currentUser = Parse.User.current();
-			var addLeaderboard = new AddLeaderboard();
-			var newPlayerRanking = count + 1; //so new player is bottom of leaderboard
-			addLeaderboard.save({Ranking: newPlayerRanking, playerID: currentUser}, {
-			   success: function(object) {
-					console.log("User added to the leaderboard55");
-					response.success("Learderboard Joined!!") //this is sent back to client
-				  },
-				  error: function(model, error) {
-					console.error("Error User could not be added to the leaderboard");
-				  }
-			  });*/
 		}, function(error) {
 			//error
 			response.error("Error: you have not been deleted from the leaderboard");
 		});
 	});
+//end of User opt out of leaderboard
 			
 		
 
