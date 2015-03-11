@@ -7,17 +7,135 @@ response.success("Doms Cloud Code");
 });
 
 //test function
-Parse.Cloud.beforeSave("MatchScore", function(request, response) {
+/*Parse.Cloud.beforeSave("MatchScore", function(request, response) {
   if (request.object.get("P10Score") > 3) {
 	response.error("Games are first to 3");
     //return response.error(JSON.stringify({code: ErrorCodes["450"], message: "Games are first to 3"}));
   } else {
     response.success();
   }
-});
+});*/
+
+//test function
+/*Parse.Cloud.beforeSave("MatchScore", function(request, response) {
+	var player2ID = request.object.get("Player2ID");
+	query.get(player2ID, {
+		success: function(player2ID) {
+			request.object.set("Player2ID", player2ID);
+			response.success();
+		},
+		error: function(error) {
+			response.error("Error: Opponent Object could not be retrieved");
+		}
+	});
+});*/
 
 //AddResult Function
+//Update the leaderboards rankings when a new match is logged.
+Parse.Cloud.beforeSave("MatchScore", function(request, response) {
+	
+	
+/*function complexQuery(objectId) {
+    var results = {};
+    return firstQuery.get(objectId).then(function(result1) {
+        results.result1 = result1;
+        return secondQuery.find();
+    })
+    .then(function(result2) {
+        results.result2 = result2;
+    })
+    .then(function(result3) {
+        results.result3 = result3;
+        return results;
+    });
+}
 
+complexQuery(objectId)
+.then(function (results) {
+    //can use results.result1, results.result2, results.result3
+});*/
+
+
+
+	//get player IDs
+	var player1ID = request.object.get("Player1ID"); //get player 1 ID
+	var player2ID = request.object.get("Player2ID"); //get player 1 ID
+	
+	var p1score = request.object.get("P1Score"); //get player 1 Score
+	var p2score = request.object.get("P2Score"); //get player 1 Score
+	console.log("Player 1 Score: " + p1score);
+	console.log("Player 2 Score: " + p2score);
+	//calculate victor
+	if (p1score > p2score){
+		var victor = player1ID;
+		var loser = player2ID;
+	} else {
+		var victor = player2ID;
+		var loser = player1ID;
+	}
+	console.log("Victor: " + JSON.stringify(victor)); //calculate victor
+	console.log("Loser: " + JSON.stringify(loser)); //calculate victor
+	
+	//set Ranks
+	var VictorRank = 0; 
+	var LoserRank = 0;
+	
+	//get rankings based on ID
+	var Leaderboard1 = Parse.Object.extend("LeaderBoard");
+	var queryVictorRank = new Parse.Query(Leaderboard1);
+	queryVictorRank.equalTo("playerID", victor); //get victor rank
+	
+	var Leaderboard2 = Parse.Object.extend("LeaderBoard");
+	var queryLoserRank = new Parse.Query(Leaderboard2);
+	queryLoserRank.equalTo("playerID", loser); //get loser rank
+	
+	queryVictorRank.find().then(function(victorRankObj) {
+		victorRanking = victorRankObj;
+		victorRank = victorRanking[0].get("Ranking"); //sets victor rank
+		console.log("Victor Rank: " + victorRank); //Success message
+	}, function(error) {
+		console.error("Error: Victor Rank could not be fetched"); //error message
+		response.error("Result not recorded");
+	}).then(function(query2) {
+		return queryLoserRank.find();
+	}).then(function(loserRankObj) {
+		loserRanking = loserRankObj;
+		loserRank = loserRanking[0].get("Ranking"); // sets loser rank
+		console.log("Loser Rank: " + loserRank); //Success message
+	}, function(error) {
+		console.error("Error: Loser Rank could not be fetched"); //error message
+		response.error("Result not recorded");
+	}).then(function(updateLeaderboard) {
+		if (victorRank < loserRank) {
+			console.log("Leaderboard Not required to be updated");
+			response.success();
+		}
+		else {
+			console.log("Leaderboard to be updated");
+			var newRank = loserRank;
+			var Leaderboard3 = Parse.Object.extend("LeaderBoard");
+			var queryUpdateLeaderboard = new Parse.Query(Leaderboard3);
+			queryUpdateLeaderboard.greaterThanOrEqualTo("Ranking", loserRank);
+			queryUpdateLeaderboard.lessThan("Ranking", victorRank);
+			queryUpdateLeaderboard.find().then(function(results) {
+				for (var i = 0; i < results.length; i++) {
+					var oldRank = results[i].get("Ranking");
+					var updateRank = results[i].set("Ranking", oldRank + 1);
+					console.log(JSON.stringify(results[i].get("playerID")) + " Rank updated from " + oldRank + " to " + (oldRank + 1));
+					results[i].save();
+				}
+				victorRanking[0].set("Ranking", newRank);
+				victorRanking[0].save();
+				console.log("The Victor is now Rank" + newRank);
+			}, 	function(error){
+				response.error("Result could not be recorded");
+			}).then (function() {
+			console.log("Result added and leaderboard updated");
+			response.success();
+			});
+		}
+	});
+});
 
 //My Profile functions
 //User opt in of leaderboard
@@ -70,10 +188,10 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 		query.find().then(function(currentPlayerRank) {
 			//success
 			console.log(currentPlayerRank[0].get("Ranking"));
-			var playerRank = currentPlayerRank[0].get("Ranking");
-			var lessPlayerRank = new Parse.Query(Leaderboard);
+			var playerRank = currentPlayerRank[0].get("Ranking"); //The users Rank
+			var lessPlayerRank = new Parse.Query(Leaderboard); 
 			lessPlayerRank.greaterThan("Ranking", playerRank);
-			return lessPlayerRank.find(); 
+			return lessPlayerRank.find();  //returns all users with rank less than the user
 		}).then(function (lessPlayerRank) {
 			for (var i = 0; i < lessPlayerRank.length; i++) {
 				var rank = lessPlayerRank[i].get("Ranking");
