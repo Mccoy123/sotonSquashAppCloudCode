@@ -34,29 +34,6 @@ response.success("Doms Cloud Code");
 //Update the leaderboards rankings when a new match is logged.
 Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 	
-	
-/*function complexQuery(objectId) {
-    var results = {};
-    return firstQuery.get(objectId).then(function(result1) {
-        results.result1 = result1;
-        return secondQuery.find();
-    })
-    .then(function(result2) {
-        results.result2 = result2;
-    })
-    .then(function(result3) {
-        results.result3 = result3;
-        return results;
-    });
-}
-
-complexQuery(objectId)
-.then(function (results) {
-    //can use results.result1, results.result2, results.result3
-});*/
-
-
-
 	//get player IDs
 	var player1ID = request.object.get("Player1ID"); //get player 1 ID
 	var player2ID = request.object.get("Player2ID"); //get player 1 ID
