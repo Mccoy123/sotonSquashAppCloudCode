@@ -201,5 +201,48 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 	});
 //end of User opt out of leaderboard
 			
+//newsfeed
+Parse.Cloud.define("newsfeed", function(request, response) {
+	var newsfeed = [];
+	Parse.Cloud.run('newsfeedMatchScore', {}, {
+		success: function(MatchScoreArray) {
+			console.log(MatchScoreArray);
+			newsfeed = newsfeed.concat(MatchScoreArray)
+			response.success(newsfeed);
+		},
+		error: function(error){
+			response.error("MatchScore could not be sourced");
+		}
+	});
+});
+
+Parse.Cloud.define("newsfeedMatchScore", function(request, response) {
+	console.log("test2");
+	var query = new Parse.Query("MatchScore");
+	query.limit(5);
+	query.descending("updatedAt");
+	query.include("User");
+	query.find({
+		success: function(MatchScoreResults) {
+			var MatchScoreArray = []
+			for (i=0; i<MatchScoreResults.length; i++){
+			
+			var content = "Player 1 Score : " + MatchScoreResults[i].get("P1Score") + " Player 2 Score: " + MatchScoreResults[i].get("P2Score");
+			var contentDate = MatchScoreResults[i].updatedAt;
+			var type = "matchScore";
+			
+			var matchScoreNewsfeedObj = {content: content, date: contentDate, type: type};
+			console.log(matchScoreNewsfeedObj);
+			
+			MatchScoreArray[MatchScoreArray.length] = matchScoreNewsfeedObj;
+			//response.success(matchScoreNewsfeedObj);
+			}
+			response.success(MatchScoreArray);
+		},
+		error: function(error) {
+			response.error("matchScore look up failed");
+		}
+	});
+});
 		
 
