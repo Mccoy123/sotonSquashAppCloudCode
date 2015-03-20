@@ -9,20 +9,38 @@ var twitterFeed = [{"created_at":"Sun Mar 15 17:23:15 +0000 2015","id":577158126
 var twitterFeed2 = twitterFeed; //this would be .data in live version
 console.log(twitterFeed2);
 console.log(twitterFeed2.length);
+twitterArray = [];
 for (i=0; i<twitterFeed2.length; i++){
-	console.log(twitterFeed2[i]);
+
+	var twitterUser = twitterFeed2[i].user.screen_name;
+	var twitterUserPic = twitterFeed2[i].user.profile_image_url;
+	var tweetText = twitterFeed2[i].text;
+	//var media = twitterFeed2[i].entities.media[0].media_url; //need to control if there isn't an attachment
+	
+	var content = "@" + twitterUser + " : " + tweetText;
+	var contentDate = twitterFeed2[i].created_at;
+	var type = "twitter";
+	
+	var twitterNewsfeedObj = {content: content, date: contentDate, type: type};
+	console.log(twitterNewsfeedObj);
+			
+	twitterArray[twitterArray.length] = twitterNewsfeedObj;
+	console.log(twitterArray);
+	
+	/*console.log(twitterFeed2[i]);
 	console.log(twitterFeed2[i].created_at);
 	console.log(twitterFeed2[i].text);
 	console.log(twitterFeed2[i].user.name);
 	console.log(twitterFeed2[i].user.screen_name);
-	console.log(twitterFeed2[i].user.profile_background_image_url);
+	console.log(twitterFeed2[i].user.profile_image_url);
 	console.log(twitterFeed2[i].entities)
 	if (typeof twitterFeed2[i].entities.media != "undefined"){
 		console.log(twitterFeed2[i].entities.media);
-		console.log(twitterFeed2[i].entities.media[0].media_url); // probably add an extra check incase their is someother type of media without a url
-	}
+		if (typeof twitterFeed2[i].entities.media[0].media_url != "undefined"){
+			console.log(twitterFeed2[i].entities.media[0].media_url);
+		}
+	}*/
 }
-// add code for if theres a picture attachment
 
 response.success("Doms Cloud Code");
 });
@@ -225,46 +243,110 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 		});
 	});
 //end of User opt out of leaderboard
-			
+
 //newsfeed
 Parse.Cloud.define("newsfeed", function(request, response) {
 	var newsfeed = [];
-	/*Parse.Cloud.run('newsfeedMatchScore', {}, {
+	
+	Parse.Cloud.run('newsfeedMatchScore', {}, {
 		success: function(MatchScoreArray) {
-			console.log(MatchScoreArray);
+			console.log("MatchscoreArray: " + MatchScoreArray);
 			newsfeed = newsfeed.concat(MatchScoreArray)
-			response.success(newsfeed);
+			Parse.Cloud.run('newsfeedTwitter', {}, {
+			success: function(twitterArray) {
+				console.log("twitterArray: " + twitterArray);
+				//console.log(twitterArray);
+				//console.log(twitterArray.length);
+				newsfeed = newsfeed.concat(twitterArray);
+				console.log("newsfeed length: " + newsfeed.length);
+				console.log("newsfeed: " + newsfeed);
+				newsfeed.sort(function(obj1, obj2){
+				return obj2.date - obj1.date; //sort in descending order so newest first
+				});
+				console.log("sorted newsfeed: " + newsfeed);
+				response.success(newsfeed);
+			},
+			error: function(error){
+				console.error("Twitter could not be sourced");
+				response.error("Twitter could not be sourced");
+			}
+		});
 		},
 		error: function(error){
 			console.error("MatchScore could not be sourced");
-		}
-	});*/
-	Parse.Cloud.run('newsfeedTwitter', {}, {
-		success: function(twitterArray) {
-			response.success("success");
-		},
-		error: function(error){
-			console.error("Twitter could not be sourced");
+			response.error("MatchScore could not be sourced");
 		}
 	});
 });
 
 Parse.Cloud.define("newsfeedTwitter", function(request, response) {
+	
+	
 	//set up api request
     var screen_name = "sotonsquash";
-    var count = 3;
+    var count = 10;
     var urlLink = 'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=' + screen_name + '&count=' + count;
+	var nonce = oauth.nonce(32);
+    var ts = Math.floor(new Date().getTime() / 1000);
+    var timestamp = ts.toString();
+	
 	//define keys
     var consumerSecret = "ZIVOzcIvPHY23GJv1PHlwVuc2CGptkvYI55x0q8B0cLuc4rAs0";
 	var tokenSecret = "vjVBxaTYXiNa1YqOgk0RwGhcBAWjrL1esYFvvZ1udaoiY";
 	var oauth_consumer_key = "E3ohMxgsJ5lu1ymBwCDJO3jAM";
 	var oauth_token = "921666319-C1ThsbP3YUEyxeVSHVQrVbZHUnWUTbXXz3hw7zsY";
 	
+	//get oauth signature
+	var encodedSig = twitterApi(consumerSecret, tokenSecret, oauth_consumer_key, oauth_token, timestamp, nonce, urlLink);
 	//oauth code twitter api requires oauth authentication prior to requests sourced from github (https://github.com/sreejithbnaick/Twitter-OAuth-1.1-Signature-Generator-js)
-    var nonce = oauth.nonce(32);
-    var ts = Math.floor(new Date().getTime() / 1000);
-    var timestamp = ts.toString();
-    var accessor = {
+   
+	
+	//Twitter Api request
+    Parse.Cloud.httpRequest({
+        method: 'GET',
+        url: urlLink,
+        headers: {
+            "Authorization": 'OAuth oauth_consumer_key="'+oauth_consumer_key+'", oauth_nonce=' + nonce + ', oauth_signature=' + encodedSig + 
+			', oauth_signature_method="HMAC-SHA1", oauth_timestamp=' + timestamp + ',oauth_token="'+oauth_token+'", oauth_version="1.0"'
+        },
+        body: {
+        },
+        success: function(twitterResult) {
+			console.log("test33");
+			console.log(twitterResult.data);
+			console.log(twitterResult.data.length);
+			
+			var twitterFeed = twitterResult;
+			var twitterFeed2 = twitterFeed.data;
+			console.log(twitterFeed2);
+			console.log(twitterFeed2.length);
+			twitterArray = [];
+			for (i=0; i<twitterFeed2.length; i++){
+
+				var twitterUser = twitterFeed2[i].user.screen_name;
+				var twitterUserPic = twitterFeed2[i].user.profile_image_url;
+				var tweetText = twitterFeed2[i].text;
+				//var media = twitterFeed2[i].entities.media[0].media_url; //need to control if there isn't an attachment
+				
+				var content = "@" + twitterUser + " : " + tweetText;
+				var userThumbnail = twitterUserPic;
+				var twitterDate = normaliseTwitterDate(twitterFeed2[i].created_at);
+				var contentDate = twitterDate;
+				var type = "twitter";
+				
+				var twitterNewsfeedObj = {date: contentDate,content: content, type: type, userThumbnail: userThumbnail};
+				//console.log(twitterNewsfeedObj);
+						
+				twitterArray[twitterArray.length] = twitterNewsfeedObj;
+				//console.log(twitterArray);
+			}
+			response.success(twitterArray);
+		}
+	});
+});
+function twitterApi (consumerSecret, tokenSecret, oauth_consumer_key, oauth_token, timestamp, nonce, urlLink ) {
+	
+	var accessor = {
         "consumerSecret": consumerSecret,
         "tokenSecret": tokenSecret
     };
@@ -291,59 +373,18 @@ Parse.Cloud.define("newsfeedTwitter", function(request, response) {
     console.log("Non-Encode Signature: " + sig);
     var encodedSig = oauth.percentEncode(sig); //finally you got oauth signature
     console.log("Encoded Signature: " + encodedSig);
+	return encodedSig;
+}
 
-	//Twitter Api request
-    Parse.Cloud.httpRequest({
-        method: 'GET',
-        url: urlLink,
-        headers: {
-            "Authorization": 'OAuth oauth_consumer_key="'+oauth_consumer_key+'", oauth_nonce=' + nonce + ', oauth_signature=' + encodedSig + ', oauth_signature_method="HMAC-SHA1", oauth_timestamp=' + timestamp + ',oauth_token="'+oauth_token+'", oauth_version="1.0"'
-        },
-        body: {
-        },
-        success: function(twitterResult) {
-		console.log("test33");
-			console.log(twitterResult.data);
-			console.log(twitterResult.data.length);
-			var twitterJson = JSON.stringify(twitterResult);
-			console.log(twitterJson.length);
-			
-			console.log(twitterResult.text);
-			cosole.log(twitterResult.get("text"));
-			
-			console.log(twitterJson);
-			var x = twitterJson.get("uuid");
-			console.log(x);
-			//use the twitter feed
-			//console.log(twitterResult);
-			console.log(twitterResult.json.length);
-			var twitterArray = []
-			for (i=0; i<twitterResult.length; i++){ //not executing
-				console.log("1");
-				var date = twitterResult.created_at;
-				console.log(date);
-				var content = {tweet: twitterResult.text, picture: twitterResult.extended_entities};
-				var type = "twitter";
-				
-				var twitterfeedObj = {content: content, date: contentDate, type: type};
-				console.log(twitterfeedObj);
-				console.log("2");
-			
-			twitterArray[twitterArray.length] = twitterfeedObj;
-			}
-            response.success(twitterArray);
-        },
-        error: function(twitterResult) {
-			console.error('Request failed with response ' + twitterResult.status + ' , ' + JSON.stringify(twitterResult));
-            response.error('Request failed with response ' + twitterResult.status + ' , ' + twitterResult);
-        }
-    });
-});
+function normaliseTwitterDate(tweetDate)
+{   
+  return new Date(Date.parse(tweetDate.replace(/( \+)/, ' UTC$1')));
+}
 
 Parse.Cloud.define("newsfeedMatchScore", function(request, response) {
-	console.log("test2");
+	//console.log("test2");
 	var query = new Parse.Query("MatchScore");
-	query.limit(10);
+	query.limit(20);
 	query.descending("updatedAt");
 	query.include("Player1ID");
 	query.include("Player2ID");
@@ -352,26 +393,28 @@ Parse.Cloud.define("newsfeedMatchScore", function(request, response) {
 			var MatchScoreArray = []
 			for (i=0; i<MatchScoreResults.length; i++){
 			
-			var p1Name = MatchScoreResults[i].get("Player1ID").get("displayName");
-			var p2Name = MatchScoreResults[i].get("Player2ID").get("displayName");
-			var p1Score = MatchScoreResults[i].get("P1Score");
-			var p2Score = MatchScoreResults[i].get("P2Score");
-			
-			if (p1Score < p2Score){
-				var matchOutcome = " lost against ";
-			} else {
-				var matchOutcome = " won against ";
+				var p1Name = MatchScoreResults[i].get("Player1ID").get("displayName");
+				var p2Name = MatchScoreResults[i].get("Player2ID").get("displayName");
+				var p1Score = MatchScoreResults[i].get("P1Score");
+				var p2Score = MatchScoreResults[i].get("P2Score");
+				
+				if (p1Score < p2Score){
+					var matchOutcome = " lost against ";
+				} else {
+					var matchOutcome = " won against ";
+				}
+				
+				var content = p1Name + matchOutcome + p2Name + " : " + p1Score + "-" + p2Score;
+				var contentDate = MatchScoreResults[i].updatedAt;
+				var userThumbnail = "img/squashResultTumbnail.jpg";
+				var type = "matchScore";
+				
+				var matchScoreNewsfeedObj = {date: contentDate, content: content, type: type, userThumbnail: userThumbnail};
+				//console.log(matchScoreNewsfeedObj);
+				
+				MatchScoreArray[MatchScoreArray.length] = matchScoreNewsfeedObj;
 			}
-			
-			var content = p1Name + matchOutcome + p2Name + " : " + p1Score + "-" + p2Score;
-			var contentDate = MatchScoreResults[i].updatedAt;
-			var type = "matchScore";
-			
-			var matchScoreNewsfeedObj = {content: content, date: contentDate, type: type};
-			console.log(matchScoreNewsfeedObj);
-			
-			MatchScoreArray[MatchScoreArray.length] = matchScoreNewsfeedObj;
-			}
+			console.log("matchscore array: " + MatchScoreArray);
 			response.success(MatchScoreArray);
 		},
 		error: function(error) {
@@ -379,5 +422,3 @@ Parse.Cloud.define("newsfeedMatchScore", function(request, response) {
 		}
 	});
 });
-		
-
