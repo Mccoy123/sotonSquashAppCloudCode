@@ -326,15 +326,19 @@ Parse.Cloud.define("newsfeedTwitter", function(request, response) {
 				var twitterUser = twitterFeed2[i].user.screen_name;
 				var twitterUserPic = twitterFeed2[i].user.profile_image_url;
 				var tweetText = twitterFeed2[i].text;
-				//var media = twitterFeed2[i].entities.media[0].media_url; //need to control if there isn't an attachment
-				
+				var media ="1" //set media flag
+				if ("media" in twitterFeed2[i].entities){
+					if ("media_url" in twitterFeed2[i].entities.media[0]){
+						var media = twitterFeed2[i].entities.media[0].media_url; //if there's an attachment assign it to media unsetting the flag
+					} 
+				}
 				var content = "@" + twitterUser + " : " + tweetText;
 				var userThumbnail = twitterUserPic;
 				var twitterDate = normaliseTwitterDate(twitterFeed2[i].created_at);
 				var contentDate = twitterDate;
 				var type = "twitter";
 				
-				var twitterNewsfeedObj = {date: contentDate,content: content, type: type, userThumbnail: userThumbnail};
+				var twitterNewsfeedObj = {date: contentDate, content: content, type: type, userThumbnail: userThumbnail, media: media};
 				//console.log(twitterNewsfeedObj);
 						
 				twitterArray[twitterArray.length] = twitterNewsfeedObj;
@@ -408,8 +412,9 @@ Parse.Cloud.define("newsfeedMatchScore", function(request, response) {
 				var contentDate = MatchScoreResults[i].updatedAt;
 				var userThumbnail = "img/squashResultTumbnail.jpg";
 				var type = "matchScore";
+				var media = "1"; //adding media flag, future update adding media to match result. Photos/videos from game, or just victor profile
 				
-				var matchScoreNewsfeedObj = {date: contentDate, content: content, type: type, userThumbnail: userThumbnail};
+				var matchScoreNewsfeedObj = {date: contentDate, content: content, type: type, userThumbnail: userThumbnail,  media: media};
 				//console.log(matchScoreNewsfeedObj);
 				
 				MatchScoreArray[MatchScoreArray.length] = matchScoreNewsfeedObj;
