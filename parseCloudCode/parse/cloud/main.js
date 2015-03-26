@@ -126,25 +126,27 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 		console.error("Error: Loser Rank could not be fetched"); //error message
 		response.error("Result not recorded");
 	}).then(function(updateLeaderboard) {
-		if (victorRank < loserRank) {
+		if (victorRank < loserRank) { //checks if leaderboard needs to be updated
 			console.log("Leaderboard Not required to be updated");
 			response.success();
 		}
 		else {
 			console.log("Leaderboard to be updated");
-			var newRank = loserRank;
+			var newRank = loserRank; //stores the victors new rank
 			var Leaderboard3 = Parse.Object.extend("LeaderBoard");
+			//fetch all users whose rank needs to be updated
 			var queryUpdateLeaderboard = new Parse.Query(Leaderboard3);
 			queryUpdateLeaderboard.greaterThanOrEqualTo("Ranking", loserRank);
 			queryUpdateLeaderboard.lessThan("Ranking", victorRank);
 			queryUpdateLeaderboard.find().then(function(results) {
+			//update their rank
 				for (var i = 0; i < results.length; i++) {
 					var oldRank = results[i].get("Ranking");
 					var updateRank = results[i].set("Ranking", oldRank + 1);
 					console.log(JSON.stringify(results[i].get("playerID")) + " Rank updated from " + oldRank + " to " + (oldRank + 1));
 					results[i].save();
 				}
-				victorRanking[0].set("Ranking", newRank);
+				victorRanking[0].set("Ranking", newRank); //set the victors new rank
 				victorRanking[0].save();
 				console.log("The Victor is now Rank" + newRank);
 			}, 	function(error){
