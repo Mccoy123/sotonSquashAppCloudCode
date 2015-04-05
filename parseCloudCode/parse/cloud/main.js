@@ -1,47 +1,9 @@
 
 // Use Parse.Cloud.define to define as many cloud functions as you want.
+//delete below function
 // For example:
 Parse.Cloud.define("hello", function(request, response) {
 console.log("hello5");
-var twitterFeed = [{"created_at":"Sun Mar 15 17:23:15 +0000 2015","id":577158126174126100,"id_str":"577158126174126080","text":"RT @sotonvarsity: Final score of 156-88!","source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>","truncated":false,"in_reply_to_status_id":null,"in_reply_to_status_id_str":null,"in_reply_to_user_id":null,"in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,"user":{"id":921666319,"id_str":"921666319","name":"Southampton Squash ","screen_name":"sotonsquash","location":"Southampton","profile_location":null,"description":"Official Tweets from Southampton University Squash Club. The nicest and fittest club in the AU.","url":"http://t.co/Vf9HdhuM6f","entities":{"url":{"urls":[{"url":"http://t.co/Vf9HdhuM6f","expanded_url":"http://www.sotonsquash.com/","display_url":"sotonsquash.com","indices":[0,22]}]},"description":{"urls":[]}},"protected":false,"followers_count":231,"friends_count":279,"listed_count":8,"created_at":"Fri Nov 02 19:49:53 +0000 2012","favourites_count":50,"utc_offset":null,"time_zone":null,"geo_enabled":true,"verified":false,"statuses_count":342,"lang":"en","contributors_enabled":false,"is_translator":false,"is_translation_enabled":false,"profile_background_color":"C0DEED","profile_background_image_url":"http://pbs.twimg.com/profile_background_images/563429389921026048/xaZ7F_w6.png","profile_background_image_url_https":"https://pbs.twimg.com/profile_background_images/563429389921026048/xaZ7F_w6.png","profile_background_tile":false,"profile_image_url":"http://pbs.twimg.com/profile_images/2798293895/b0b5a1a4ef034633d07b8eaa0880de60_normal.png","profile_image_url_https":"https://pbs.twimg.com/profile_images/2798293895/b0b5a1a4ef034633d07b8eaa0880de60_normal.png","profile_banner_url":"https://pbs.twimg.com/profile_banners/921666319/1352038091","profile_link_color":"DD2E44","profile_sidebar_border_color":"000000","profile_sidebar_fill_color":"DDEEF6","profile_text_color":"333333","profile_use_background_image":true,"default_profile":false,"default_profile_image":false,"following":false,"follow_request_sent":false,"notifications":false},"geo":null,"coordinates":null,"place":null,"contributors":null,"retweeted_status":{"created_at":"Sun Mar 15 17:22:11 +0000 2015","id":577157860062314500,"id_str":"577157860062314496","text":"Final score of 156-88!","source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>","truncated":false,"in_reply_to_status_id":null,"in_reply_to_status_id_str":null,"in_reply_to_user_id":null,"in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,"user":{"id":3048192977,"id_str":"3048192977","name":"Team Soton Varsity","screen_name":"sotonvarsity","location":"","profile_location":null,"description":"Follow for live updates from #TeamSoton at #Varsity2015","url":null,"entities":{"description":{"urls":[]}},"protected":false,"followers_count":235,"friends_count":40,"listed_count":1,"created_at":"Fri Feb 20 22:43:36 +0000 2015","favourites_count":2,"utc_offset":null,"time_zone":null,"geo_enabled":false,"verified":false,"statuses_count":142,"lang":"en","contributors_enabled":false,"is_translator":false,"is_translation_enabled":false,"profile_background_color":"000000","profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png","profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png","profile_background_tile":false,"profile_image_url":"http://pbs.twimg.com/profile_images/576308834253213696/F8TSRjF1_normal.png","profile_image_url_https":"https://pbs.twimg.com/profile_images/576308834253213696/F8TSRjF1_normal.png","profile_banner_url":"https://pbs.twimg.com/profile_banners/3048192977/1424473192","profile_link_color":"800000","profile_sidebar_border_color":"000000","profile_sidebar_fill_color":"000000","profile_text_color":"000000","profile_use_background_image":false,"default_profile":false,"default_profile_image":false,"following":true,"follow_request_sent":false,"notifications":false},"geo":null,"coordinates":null,"place":null,"contributors":null,"retweet_count":34,"favorite_count":14,"entities":{"hashtags":[],"symbols":[],"user_mentions":[],"urls":[]},"favorited":false,"retweeted":true,"lang":"en"},"retweet_count":34,"favorite_count":0,"entities":{"hashtags":[],"symbols":[],"user_mentions":[{"screen_name":"sotonvarsity","name":"Team Soton Varsity","id":3048192977,"id_str":"3048192977","indices":[3,16]}],"urls":[]},"favorited":false,"retweeted":true,"lang":"en"},{"created_at":"Sun Mar 15 17:23:09 +0000 2015","id":577158103675830300,"id_str":"577158103675830272","text":"RT @sotonvarsity: Team Southampton are the official winners of Varsity 2015!","source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>","truncated":false,"in_reply_to_status_id":null,"in_reply_to_status_id_str":null,"in_reply_to_user_id":null,"in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,"user":{"id":921666319,"id_str":"921666319","name":"Southampton Squash ","screen_name":"sotonsquash","location":"Southampton","profile_location":null,"description":"Official Tweets from Southampton University Squash Club. The nicest and fittest club in the AU.","url":"http://t.co/Vf9HdhuM6f","entities":{"url":{"urls":[{"url":"http://t.co/Vf9HdhuM6f","expanded_url":"http://www.sotonsquash.com/","display_url":"sotonsquash.com","indices":[0,22]}]},"description":{"urls":[]}},"protected":false,"followers_count":231,"friends_count":279,"listed_count":8,"created_at":"Fri Nov 02 19:49:53 +0000 2012","favourites_count":50,"utc_offset":null,"time_zone":null,"geo_enabled":true,"verified":false,"statuses_count":342,"lang":"en","contributors_enabled":false,"is_translator":false,"is_translation_enabled":false,"profile_background_color":"C0DEED","profile_background_image_url":"http://pbs.twimg.com/profile_background_images/563429389921026048/xaZ7F_w6.png","profile_background_image_url_https":"https://pbs.twimg.com/profile_background_images/563429389921026048/xaZ7F_w6.png","profile_background_tile":false,"profile_image_url":"http://pbs.twimg.com/profile_images/2798293895/b0b5a1a4ef034633d07b8eaa0880de60_normal.png","profile_image_url_https":"https://pbs.twimg.com/profile_images/2798293895/b0b5a1a4ef034633d07b8eaa0880de60_normal.png","profile_banner_url":"https://pbs.twimg.com/profile_banners/921666319/1352038091","profile_link_color":"DD2E44","profile_sidebar_border_color":"000000","profile_sidebar_fill_color":"DDEEF6","profile_text_color":"333333","profile_use_background_image":true,"default_profile":false,"default_profile_image":false,"following":false,"follow_request_sent":false,"notifications":false},"geo":null,"coordinates":null,"place":null,"contributors":null,"retweeted_status":{"created_at":"Sun Mar 15 17:21:41 +0000 2015","id":577157734317056000,"id_str":"577157734317056000","text":"Team Southampton are the official winners of Varsity 2015!","source":"<a href=\"http://twitter.com/download/iphone\" rel=\"nofollow\">Twitter for iPhone</a>","truncated":false,"in_reply_to_status_id":null,"in_reply_to_status_id_str":null,"in_reply_to_user_id":null,"in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,"user":{"id":3048192977,"id_str":"3048192977","name":"Team Soton Varsity","screen_name":"sotonvarsity","location":"","profile_location":null,"description":"Follow for live updates from #TeamSoton at #Varsity2015","url":null,"entities":{"description":{"urls":[]}},"protected":false,"followers_count":235,"friends_count":40,"listed_count":1,"created_at":"Fri Feb 20 22:43:36 +0000 2015","favourites_count":2,"utc_offset":null,"time_zone":null,"geo_enabled":false,"verified":false,"statuses_count":142,"lang":"en","contributors_enabled":false,"is_translator":false,"is_translation_enabled":false,"profile_background_color":"000000","profile_background_image_url":"http://abs.twimg.com/images/themes/theme1/bg.png","profile_background_image_url_https":"https://abs.twimg.com/images/themes/theme1/bg.png","profile_background_tile":false,"profile_image_url":"http://pbs.twimg.com/profile_images/576308834253213696/F8TSRjF1_normal.png","profile_image_url_https":"https://pbs.twimg.com/profile_images/576308834253213696/F8TSRjF1_normal.png","profile_banner_url":"https://pbs.twimg.com/profile_banners/3048192977/1424473192","profile_link_color":"800000","profile_sidebar_border_color":"000000","profile_sidebar_fill_color":"000000","profile_text_color":"000000","profile_use_background_image":false,"default_profile":false,"default_profile_image":false,"following":true,"follow_request_sent":false,"notifications":false},"geo":null,"coordinates":null,"place":null,"contributors":null,"retweet_count":101,"favorite_count":44,"entities":{"hashtags":[],"symbols":[],"user_mentions":[],"urls":[]},"favorited":false,"retweeted":true,"lang":"en"},"retweet_count":101,"favorite_count":0,"entities":{"hashtags":[],"symbols":[],"user_mentions":[{"screen_name":"sotonvarsity","name":"Team Soton Varsity","id":3048192977,"id_str":"3048192977","indices":[3,16]}],"urls":[]},"favorited":false,"retweeted":true,"lang":"en"},{"created_at":"Sun Mar 15 15:13:42 +0000 2015","id":577125526336368600,"id_str":"577125526336368640","text":"SotonSquash victory burgers #playtowin #playtoeat #Varsity2015 http://t.co/87sl4ppFrt","source":"<a href=\"http://twitter.com/download/android\" rel=\"nofollow\">Twitter for Android</a>","truncated":false,"in_reply_to_status_id":null,"in_reply_to_status_id_str":null,"in_reply_to_user_id":null,"in_reply_to_user_id_str":null,"in_reply_to_screen_name":null,"user":{"id":921666319,"id_str":"921666319","name":"Southampton Squash ","screen_name":"sotonsquash","location":"Southampton","profile_location":null,"description":"Official Tweets from Southampton University Squash Club. The nicest and fittest club in the AU.","url":"http://t.co/Vf9HdhuM6f","entities":{"url":{"urls":[{"url":"http://t.co/Vf9HdhuM6f","expanded_url":"http://www.sotonsquash.com/","display_url":"sotonsquash.com","indices":[0,22]}]},"description":{"urls":[]}},"protected":false,"followers_count":231,"friends_count":279,"listed_count":8,"created_at":"Fri Nov 02 19:49:53 +0000 2012","favourites_count":50,"utc_offset":null,"time_zone":null,"geo_enabled":true,"verified":false,"statuses_count":342,"lang":"en","contributors_enabled":false,"is_translator":false,"is_translation_enabled":false,"profile_background_color":"C0DEED","profile_background_image_url":"http://pbs.twimg.com/profile_background_images/563429389921026048/xaZ7F_w6.png","profile_background_image_url_https":"https://pbs.twimg.com/profile_background_images/563429389921026048/xaZ7F_w6.png","profile_background_tile":false,"profile_image_url":"http://pbs.twimg.com/profile_images/2798293895/b0b5a1a4ef034633d07b8eaa0880de60_normal.png","profile_image_url_https":"https://pbs.twimg.com/profile_images/2798293895/b0b5a1a4ef034633d07b8eaa0880de60_normal.png","profile_banner_url":"https://pbs.twimg.com/profile_banners/921666319/1352038091","profile_link_color":"DD2E44","profile_sidebar_border_color":"000000","profile_sidebar_fill_color":"DDEEF6","profile_text_color":"333333","profile_use_background_image":true,"default_profile":false,"default_profile_image":false,"following":false,"follow_request_sent":false,"notifications":false},"geo":{"type":"Point","coordinates":[50.7953752,-1.1075899]},"coordinates":{"type":"Point","coordinates":[-1.1075899,50.7953752]},"place":{"id":"511655fc081bb251","url":"https://api.twitter.com/1.1/geo/id/511655fc081bb251.json","place_type":"city","name":"Portsmouth","full_name":"Portsmouth, England","country_code":"GB","country":"United Kingdom","contained_within":[],"bounding_box":{"type":"Polygon","coordinates":[[[-1.117912,50.778429],[-1.0160589,50.778429],[-1.0160589,50.8593],[-1.117912,50.8593]]]},"attributes":{}},"contributors":null,"retweet_count":0,"favorite_count":0,"entities":{"hashtags":[{"text":"playtowin","indices":[28,38]},{"text":"playtoeat","indices":[39,49]},{"text":"Varsity2015","indices":[50,62]}],"symbols":[],"user_mentions":[],"urls":[],"media":[{"id":577125511593340900,"id_str":"577125511593340929","indices":[63,85],"media_url":"http://pbs.twimg.com/media/CAJcmFVWMAEVU7l.jpg","media_url_https":"https://pbs.twimg.com/media/CAJcmFVWMAEVU7l.jpg","url":"http://t.co/87sl4ppFrt","display_url":"pic.twitter.com/87sl4ppFrt","expanded_url":"http://twitter.com/sotonsquash/status/577125526336368640/photo/1","type":"photo","sizes":{"small":{"w":340,"h":453,"resize":"fit"},"medium":{"w":600,"h":800,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"large":{"w":768,"h":1024,"resize":"fit"}}}]},"extended_entities":{"media":[{"id":577125511593340900,"id_str":"577125511593340929","indices":[63,85],"media_url":"http://pbs.twimg.com/media/CAJcmFVWMAEVU7l.jpg","media_url_https":"https://pbs.twimg.com/media/CAJcmFVWMAEVU7l.jpg","url":"http://t.co/87sl4ppFrt","display_url":"pic.twitter.com/87sl4ppFrt","expanded_url":"http://twitter.com/sotonsquash/status/577125526336368640/photo/1","type":"photo","sizes":{"small":{"w":340,"h":453,"resize":"fit"},"medium":{"w":600,"h":800,"resize":"fit"},"thumb":{"w":150,"h":150,"resize":"crop"},"large":{"w":768,"h":1024,"resize":"fit"}}}]},"favorited":false,"retweeted":false,"possibly_sensitive":false,"lang":"en"}]
-//console.log(twitterFeed);
-//console.log(twitterFeed.text);
-var twitterFeed2 = twitterFeed; //this would be .data in live version
-console.log(twitterFeed2);
-console.log(twitterFeed2.length);
-twitterArray = [];
-for (i=0; i<twitterFeed2.length; i++){
-
-	var twitterUser = twitterFeed2[i].user.screen_name;
-	var twitterUserPic = twitterFeed2[i].user.profile_image_url;
-	var tweetText = twitterFeed2[i].text;
-	//var media = twitterFeed2[i].entities.media[0].media_url; //need to control if there isn't an attachment
-	
-	var content = "@" + twitterUser + " : " + tweetText;
-	var contentDate = twitterFeed2[i].created_at;
-	var type = "twitter";
-	
-	var twitterNewsfeedObj = {content: content, date: contentDate, type: type};
-	console.log(twitterNewsfeedObj);
-			
-	twitterArray[twitterArray.length] = twitterNewsfeedObj;
-	console.log(twitterArray);
-	
-	/*console.log(twitterFeed2[i]);
-	console.log(twitterFeed2[i].created_at);
-	console.log(twitterFeed2[i].text);
-	console.log(twitterFeed2[i].user.name);
-	console.log(twitterFeed2[i].user.screen_name);
-	console.log(twitterFeed2[i].user.profile_image_url);
-	console.log(twitterFeed2[i].entities)
-	if (typeof twitterFeed2[i].entities.media != "undefined"){
-		console.log(twitterFeed2[i].entities.media);
-		if (typeof twitterFeed2[i].entities.media[0].media_url != "undefined"){
-			console.log(twitterFeed2[i].entities.media[0].media_url);
-		}
-	}*/
-}
-
 response.success("Doms Cloud Code");
 });
 
@@ -49,29 +11,38 @@ response.success("Doms Cloud Code");
 var oauth = require('cloud/oauth.js');
 var sha = require('cloud/sha1.js');
 
-//test function
-/*Parse.Cloud.beforeSave("MatchScore", function(request, response) {
-  if (request.object.get("P10Score") > 3) {
-	response.error("Games are first to 3");
-    //return response.error(JSON.stringify({code: ErrorCodes["450"], message: "Games are first to 3"}));
-  } else {
-    response.success();
-  }
-});*/
-
-//test function
-/*Parse.Cloud.beforeSave("MatchScore", function(request, response) {
-	var player2ID = request.object.get("Player2ID");
-	query.get(player2ID, {
-		success: function(player2ID) {
-			request.object.set("Player2ID", player2ID);
-			response.success();
-		},
-		error: function(error) {
-			response.error("Error: Opponent Object could not be retrieved");
+//challengeOpponentFunctions
+Parse.Cloud.define("fetchOpponents", function(request, response) {
+	console.log("hello");
+	var currentUserRank = 0; //set current users rank
+	var Leaderboard = Parse.Object.extend("LeaderBoard");
+	var queryCurrentUserRank = new Parse.Query(Leaderboard);
+	queryCurrentUserRank.equalTo("playerID",Parse.User.current()); //gets current users rank
+	queryCurrentUserRank.find().then(function(currentUserRankObj) {
+		console.log(currentUserRankObj);
+		currentUserRank = currentUserRankObj[0].get("Ranking"); //retrieves current users ranking
+		console.log(currentUserRank);
+	}).then(function (findOpponents) {
+		var queryFindOpponents = new Parse.Query(Leaderboard); //combines the two queries to find the valid opponents
+		queryFindOpponents.lessThan("Ranking",currentUserRank); //gets all user with a superior rank
+		queryFindOpponents.greaterThanOrEqualTo("Ranking",currentUserRank-3); //returns all users with a rank 3 superior and below the current user
+		queryFindOpponents.include("playerID");
+		return queryFindOpponents.find();
+	}).then(function(opponentArrayRaw) {
+		var opponentArray = []
+		for(var i = 0; i < opponentArrayRaw.length; i++) {
+			var value = opponentArrayRaw[i].get("playerID");; //Opponents user object
+			var text = value.get("displayName"); //opponents displayName
+			var opponentArrayObj = {text: text, value: value};
+			opponentArray[opponentArray.length] = opponentArrayObj;
+			console.log(opponentArrayRaw[i]);
 		}
-	});
-});*/
+		console.log(opponentArray);
+		response.success(opponentArray);
+	})
+});
+
+
 
 //AddResult Function
 //Update the leaderboards rankings when a new match is logged.
