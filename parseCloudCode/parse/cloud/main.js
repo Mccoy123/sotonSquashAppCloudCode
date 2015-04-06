@@ -13,7 +13,6 @@ var sha = require('cloud/sha1.js');
 
 //leaderboard
 Parse.Cloud.define("fetchLeaderboard", function(request, response) {
-	console.log("hello");
 	var Leaderboard = Parse.Object.extend("LeaderBoard");
 	var queryLeaderboard = new Parse.Query(Leaderboard);
 	queryLeaderboard.include("playerID");
@@ -37,6 +36,40 @@ Parse.Cloud.define("fetchLeaderboard", function(request, response) {
 		error: function() {
 			console.error("leaderboard not retrieved");
 			response.error("Leaderboard not retrieved");
+		}
+	});
+});
+
+//MyChallenges Functions
+//New Challenges
+Parse.Cloud.define("newChallenges", function(request, response) {
+	var Challenges = Parse.Object.extend("Challenges");
+	var queryChallenges = new Parse.Query(Challenges);
+	queryChallenges.equalTo("ChallengeeID", Parse.User.current()); //only returns challenges specific to the current user
+	queryChallenges.equalTo("Active", true); //only returns active challenges
+	queryChallenges.equalTo("Accepted", false); //An accepted challenge is not a new challenge but an outstanding one
+	queryChallenges.include("ChallengerID"); //includes the challenger user object
+	queryChallenges.find({
+		success: function(newChallengesArrayRaw) {
+			var newChallengesArray = [];
+			for(var i = 0; i < newChallengesArrayRaw.length; i++) {
+				var challengeSentDate = newChallengesArrayRaw[i].createdAt;
+				var challengeObbID = newChallengesArrayRaw[i].id;
+				var challengerObj = newChallengesArrayRaw[i].get("ChallengerID");; //gets user object
+				var challengerName = challengerObj.get("displayName"); //gets the display name of whom sent the chellenge
+				var challengerArrayObj = {challengeSentDate: challengeSentDate, challengerName: challengerName, challengeObbID: challengeObbID };
+				newChallengesArray[newChallengesArray.length] = challengerArrayObj;
+				console.log(challengerArrayObj);
+			}
+			newChallengesArray.sort(function(obj1, obj2){
+				return obj2.challengeSentDate - obj1.challengeSentDate; //sort in ascending order so newest first
+			});
+			console.log(newChallengesArray);
+			response.success(newChallengesArray);
+		},
+		error: function() {
+			console.error("New Challenges not retrieved");
+			response.error("New Challenged not retrieved");
 		}
 	});
 });
@@ -73,9 +106,57 @@ Parse.Cloud.define("fetchOpponents", function(request, response) {
 	})
 });
 
-
-
 //AddResult Function
+//fetch Opponents
+Parse.Cloud.define("fetchOpponentsAddResult", function(request, response) {
+	console.log("hello");
+	var Challenges = Parse.Object.extend("Challenges");
+	//retrieve challengees where the user is the challengee	
+	var userChallengee = new Parse.Query(Challenges);
+	userChallengee.equalTo("ChallengeeID", Parse.User.current()); //only returns challenges specific to the current user part1
+	//retrieve challengees where the user is the challenger	
+	var userChallenger = new Parse.Query(Challenges);
+	userChallenger.equalTo("ChallengerID", Parse.User.current()); //only returns challenges specific to the current user part2
+	//main query
+	var queryChallenges = new Parse.Query(Challenges);
+	queryChallenges = Parse.Query.or(userChallengee, userChallenger); //returns all challenges involving current user
+	queryChallenges.equalTo("Active", true); //only returns active challenges
+	queryChallenges.equalTo("Accepted", true); //only returns accepted challenges
+	queryChallenges.include("ChallengerID"); //includes the challenger user object
+	queryChallenges.include("ChallengeeID"); //includes the challengee user object
+	queryChallenges.find({
+		success: function(openChallengesArrayRaw) {
+			var openChallengesArray = [];
+			for(var i = 0; i < openChallengesArrayRaw.length; i++) {
+				var challengeObbID = openChallengesArrayRaw[i].id;
+				var challengeSentDate = openChallengesArrayRaw[i].createdAt;
+				if (openChallengesArrayRaw[i].get("ChallengerID").id == Parse.User.current().id){
+					var opponentObj = openChallengesArrayRaw[i].get("ChallengeeID"); //gets opponents user object
+					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+					var opponentId = opponentObj.id; //gets the id of your opponent
+				}
+				else {
+					var opponentObj = openChallengesArrayRaw[i].get("ChallengerID"); //gets opponents user object
+					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+					var opponentId = opponentObj.id; //gets the id of your opponent
+				}
+				var openChallengesArrayObj = {opponentName: opponentName, opponentId: opponentId, challengeObbID: challengeObbID, challengeSentDate: challengeSentDate };
+				openChallengesArray[openChallengesArray.length] = openChallengesArrayObj;
+				console.log(openChallengesArrayObj);
+			}
+			openChallengesArray.sort(function(obj1, obj2){
+				return obj2.challengeSentDate - obj1.challengeSentDate; //sort in ascending order so newest first
+			});
+			console.log(openChallengesArray);
+			response.success(openChallengesArray);
+		},
+		error: function() {
+			console.error("Challenge information could not be retrieved");
+			response.error("Challenge information could not retrieved");
+		}
+	});
+});
+
 //Update the leaderboards rankings when a new match is logged.
 Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 	
