@@ -31,11 +31,13 @@ Parse.Cloud.define("fetchOpponents", function(request, response) {
 	}).then(function(opponentArrayRaw) {
 		var opponentArray = []
 		for(var i = 0; i < opponentArrayRaw.length; i++) {
-			var value = opponentArrayRaw[i].get("playerID");; //Opponents user object
-			var text = value.get("displayName"); //opponents displayName
+			var oppObj = opponentArrayRaw[i].get("playerID");; //Opponents user object
+			var text = oppObj.get("displayName"); //opponents displayName
+			var value = oppObj.id; //Opponents user objectID
 			var opponentArrayObj = {text: text, value: value};
+			//need to work out validation to not add object to array if an active challenge already exists.
 			opponentArray[opponentArray.length] = opponentArrayObj;
-			console.log(opponentArrayRaw[i]);
+			console.log(opponentArray[i]);
 		}
 		console.log(opponentArray);
 		response.success(opponentArray);
