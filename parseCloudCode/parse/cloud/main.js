@@ -11,9 +11,38 @@ response.success("Doms Cloud Code");
 var oauth = require('cloud/oauth.js');
 var sha = require('cloud/sha1.js');
 
+//leaderboard
+Parse.Cloud.define("fetchLeaderboard", function(request, response) {
+	console.log("hello");
+	var Leaderboard = Parse.Object.extend("LeaderBoard");
+	var queryLeaderboard = new Parse.Query(Leaderboard);
+	queryLeaderboard.include("playerID");
+	queryLeaderboard.find({
+		success: function(leaderboardArrayRaw) {
+			var leaderboardArray = [];
+			for(var i = 0; i < leaderboardArrayRaw.length; i++) {
+				var playerRank = leaderboardArrayRaw[i].get("Ranking");
+				var playerObj = leaderboardArrayRaw[i].get("playerID");; //gets user object
+				var playerName = playerObj.get("displayName");
+				var leaderboardArrayObj = {playerRank: playerRank, playerName: playerName};
+				leaderboardArray[leaderboardArray.length] = leaderboardArrayObj;
+				console.log(leaderboardArrayObj);
+			}
+			leaderboardArray.sort(function(obj1, obj2){
+				return  obj1.playerRank - obj2.playerRank; //sort in ascending order so highest rank first
+			});
+			console.log(leaderboardArray);
+			response.success(leaderboardArray);
+		},
+		error: function() {
+			console.error("leaderboard not retrieved");
+			response.error("Leaderboard not retrieved");
+		}
+	});
+});
+
 //challengeOpponentFunctions
 Parse.Cloud.define("fetchOpponents", function(request, response) {
-	console.log("hello");
 	var currentUserRank = 0; //set current users rank
 	var Leaderboard = Parse.Object.extend("LeaderBoard");
 	var queryCurrentUserRank = new Parse.Query(Leaderboard);
