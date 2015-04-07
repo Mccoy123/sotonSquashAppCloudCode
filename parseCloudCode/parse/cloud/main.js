@@ -117,7 +117,7 @@ Parse.Cloud.define("activeChallenges", function(request, response) {
 					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
 					var opponentId = opponentObj.id; //gets the id of your opponent
 					var challengeDetails = opponentName + " challenged you to a match"
-					if (challengeAccepted == false){
+					if (challengeAccepted == true){
 						var challengeStatusMessage = "You Accepted " + challengeUpdatedDate;
 						var challengeStatus = "challengeAccepted"; //sets the challenge status used for formatting table
 						var oppnentInfo = opponentObj.get("email"); //gets the display name of your opponent
