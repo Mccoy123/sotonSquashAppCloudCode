@@ -56,7 +56,7 @@ Parse.Cloud.define("newChallenges", function(request, response) {
 				var challengeSentDate = newChallengesArrayRaw[i].createdAt;
 				var challengeObbID = newChallengesArrayRaw[i].id;
 				var challengerObj = newChallengesArrayRaw[i].get("ChallengerID");; //gets user object
-				var challengerName = challengerObj.get("displayName"); //gets the display name of whom sent the chellenge
+				var challengerName = challengerObj.get("displayName"); //gets the display name of whom sent the challenge
 				var challengerArrayObj = {challengeSentDate: challengeSentDate, challengerName: challengerName, challengeObbID: challengeObbID };
 				newChallengesArray[newChallengesArray.length] = challengerArrayObj;
 				console.log(challengerArrayObj);
@@ -70,6 +70,78 @@ Parse.Cloud.define("newChallenges", function(request, response) {
 		error: function() {
 			console.error("New Challenges not retrieved");
 			response.error("New Challenged not retrieved");
+		}
+	});
+});
+
+//Display Open Active Challenges
+Parse.Cloud.define("activeChallenges", function(request, response) {
+	var Challenges = Parse.Object.extend("Challenges");
+	var userChallengee = new Parse.Query(Challenges);
+	userChallengee.equalTo("ChallengeeID", Parse.User.current()); //only returns challenges specific to the current user part1
+	//retrieve challengees where the user is the challenger	
+	var userChallenger = new Parse.Query(Challenges);
+	userChallenger.equalTo("ChallengerID", Parse.User.current()); //only returns challenges specific to the current user part2
+	//main query
+	var queryActiveChallenges = new Parse.Query(Challenges);
+	queryActiveChallenges = Parse.Query.or(userChallengee, userChallenger); //returns all challenges involving current user
+	queryActiveChallenges.equalTo("Active", true); //only returns active challenges
+	queryActiveChallenges.include("ChallengerID"); //includes the challenger user object
+	queryActiveChallenges.include("ChallengeeID"); //includes the challengee user object
+	queryActiveChallenges.find({
+		success: function(activeChallengesArrayRaw) {
+			var activeChallengesArray = [];
+			for(var i = 0; i < activeChallengesArrayRaw.length; i++) {
+				var challengeUpdatedDateRaw = activeChallengesArrayRaw[i].updatedAt;
+				var challengeUpdatedDate = new Date(Date.parse(challengeUpdatedDateRaw)).toUTCString();
+				var challengeObbID = activeChallengesArrayRaw[i].id;
+				var challengeAccepted = activeChallengesArrayRaw[i].get("Accepted");
+				var oppnentInfo = "";
+				if (activeChallengesArrayRaw[i].get("ChallengerID").id == Parse.User.current().id){
+					var opponentObj = activeChallengesArrayRaw[i].get("ChallengeeID"); //gets opponents user object
+					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+					var opponentId = opponentObj.id; //gets the id of your opponent
+					var challengeDetails = "You challenged " + opponentName + " to a match"
+					if (challengeAccepted == true){
+						var challengeStatusMessage = "Challenge Accepted " + challengeUpdatedDate;
+						var challengeStatus = "challengeAccepted"; //sets the challenge status used for formatting table
+						var oppnentInfo = opponentObj.get("email"); //gets the display name of your opponent
+					}
+					else {
+						var challengeStatusMessage = "Awaiting reply from opponent (Challenge sent  " + challengeUpdatedDate + ")";
+						var challengeStatus = "awaitingResponseOpponent"; //sets the challenge status used for formatting table
+					}
+				}
+				else {
+					var opponentObj = activeChallengesArrayRaw[i].get("ChallengerID"); //gets opponents user object
+					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+					var opponentId = opponentObj.id; //gets the id of your opponent
+					var challengeDetails = opponentName + " challenged you to a match"
+					if (challengeAccepted == false){
+						var challengeStatusMessage = "You Accepted " + challengeUpdatedDate;
+						var challengeStatus = "challengeAccepted"; //sets the challenge status used for formatting table
+						var oppnentInfo = opponentObj.get("email"); //gets the display name of your opponent
+					}
+					else {
+						var challengeStatusMessage = "You have not yet replied (Challenge sent  " + challengeUpdatedDate + ")";
+						var challengeStatus = "awaitingResponseUser"; //sets the challenge status used for formatting table
+					}
+				}
+				//set up array object
+				//store in array
+				var activeChallengesArrayObj = {challengeDetails: challengeDetails, challengeStatus: challengeStatus, challengeStatusMessage: challengeStatusMessage, oppnentInfo: oppnentInfo, challengeObbID: challengeObbID, challengeUpdatedDateRaw: challengeUpdatedDateRaw }
+				activeChallengesArray[activeChallengesArray.length] = activeChallengesArrayObj;
+				console.log(activeChallengesArrayObj);
+			}
+			activeChallengesArray.sort(function(obj1, obj2){
+				return obj2.challengeUpdatedDateRaw - obj1.challengeUpdatedDateRaw; //sort in ascending order so newest first
+			});
+			console.log(activeChallengesArray);
+			response.success(activeChallengesArray);
+		},
+		error: function() {
+			console.error("Challenge information could not be retrieved");
+			response.error("Challenge information could not retrieved");
 		}
 	});
 });
@@ -332,19 +404,35 @@ Parse.Cloud.define("newsfeed", function(request, response) {
 		success: function(MatchScoreArray) {
 			console.log("MatchscoreArray: " + MatchScoreArray);
 			newsfeed = newsfeed.concat(MatchScoreArray)
-			Parse.Cloud.run('newsfeedTwitter', {}, {
+			var urlLink = 'https://api.twitter.com/1.1/statuses/home_timeline.json?screen_name=';
+			var numberOfTweets = 5;
+			Parse.Cloud.run('fetchTweetsNewsfeed', {url: urlLink, count: numberOfTweets}, {
 			success: function(twitterArray) {
 				console.log("twitterArray: " + twitterArray);
-				//console.log(twitterArray);
-				//console.log(twitterArray.length);
+				//add new newsfeed objects to array
 				newsfeed = newsfeed.concat(twitterArray);
-				console.log("newsfeed length: " + newsfeed.length);
-				console.log("newsfeed: " + newsfeed);
-				newsfeed.sort(function(obj1, obj2){
-				return obj2.date - obj1.date; //sort in descending order so newest first
+				//set up next call
+				var urlLink = 'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=';
+				var numberOfTweets = 5;
+				Parse.Cloud.run('fetchTweetsNewsfeed', {url: urlLink, count: numberOfTweets}, {
+					success: function(twitterArray) {
+						console.log("twitterArray: " + twitterArray);
+						//console.log(twitterArray);
+						//console.log(twitterArray.length);
+						newsfeed = newsfeed.concat(twitterArray);
+						console.log("newsfeed length: " + newsfeed.length);
+						console.log("newsfeed: " + newsfeed);
+						newsfeed.sort(function(obj1, obj2){
+						return obj2.date - obj1.date; //sort in descending order so newest first
+						});
+						console.log("sorted newsfeed: " + newsfeed);
+						response.success(newsfeed);
+					},
+					error: function(error){
+						console.error("Twitter could not be sourced");
+						response.error("Twitter could not be sourced");
+					}
 				});
-				console.log("sorted newsfeed: " + newsfeed);
-				response.success(newsfeed);
 			},
 			error: function(error){
 				console.error("Twitter could not be sourced");
@@ -359,13 +447,13 @@ Parse.Cloud.define("newsfeed", function(request, response) {
 	});
 });
 
-Parse.Cloud.define("newsfeedTwitter", function(request, response) {
+Parse.Cloud.define("fetchTweetsNewsfeed", function(request, response) {
 	
 	
 	//set up api request
     var screen_name = "sotonsquash";
-    var count = 10;
-    var urlLink = 'https://api.twitter.com/1.1/statuses/user_timeline.json?screen_name=' + screen_name + '&count=' + count;
+    var count = request.params.count;
+    var urlLink = request.params.url  + screen_name + '&count=' + count;
 	var nonce = oauth.nonce(32);
     var ts = Math.floor(new Date().getTime() / 1000);
     var timestamp = ts.toString();
@@ -402,7 +490,7 @@ Parse.Cloud.define("newsfeedTwitter", function(request, response) {
 			console.log(twitterFeed2.length);
 			twitterArray = [];
 			for (i=0; i<twitterFeed2.length; i++){
-
+				//parse tweets into a useable newsfeed format object
 				var twitterUser = twitterFeed2[i].user.screen_name;
 				var twitterUserPic = twitterFeed2[i].user.profile_image_url;
 				var tweetText = twitterFeed2[i].text;
