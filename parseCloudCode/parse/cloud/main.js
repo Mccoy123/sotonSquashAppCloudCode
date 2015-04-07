@@ -41,6 +41,50 @@ Parse.Cloud.define("fetchLeaderboard", function(request, response) {
 });
 
 //MyChallenges Functions
+//decline challenges
+Parse.Cloud.define("declineChallenge", function(request, response) {
+	var challengeObjectID = request.params.challengeObjectID;
+	var Challenge = Parse.Object.extend("Challenges");
+	var queryChallenge = new Parse.Query(Challenge);
+	//retrieve the challenge object
+	queryChallenge.get(challengeObjectID, {
+		success: function(challengeObject) {
+			//set Active flag to close challenge
+			challengeObject.set("Active", false);
+			challengeObject.save(null, {
+				success: function() {
+					//record walkover result
+					var MatchScore = Parse.Object.extend("MatchScore");
+					var matchScore = new MatchScore(); //create a new matchScore object
+					var VictorID = challengeObject.get("ChallengerID");
+					var LoserID = challengeObject.get("ChallengeeID");
+					var VictorScore = "3";
+					var LoserScore = "0";
+					//save the result
+					matchScore.save({VictorID: VictorID, LoserID: LoserID, VictorScore: VictorScore, LoserScore: LoserScore}, {
+						success: function(object) {
+							console.log("Score Successfully Added"); //User success message
+							response.success("Challenge Declined Opponent awarded 3-0 Walkover");
+						},
+						error: function(model, error) {
+							console.error("Challenge could not be declined as a new result could not be added");
+							response.error("Challenge could not be Accepted check internet connection");
+						}
+					});
+				},
+				error: function() {
+					console.error("Challenge could not be declined as as active flag could not be changed");
+					response.error("Challenge could not be Accepted check internet connection");
+				}
+			});
+		},
+		error: function() {
+			console.error("Challenge could not be Accepted as challenge object could not be retrieved");
+			response.error("Challenge could not be Accepted check internet connection");
+		}
+	});
+});
+
 //New Challenges
 Parse.Cloud.define("newChallenges", function(request, response) {
 	var Challenges = Parse.Object.extend("Challenges");
@@ -145,6 +189,8 @@ Parse.Cloud.define("activeChallenges", function(request, response) {
 		}
 	});
 });
+
+//end of myChallenges functions
 
 //challengeOpponentFunctions
 Parse.Cloud.define("fetchOpponents", function(request, response) {
