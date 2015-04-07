@@ -161,44 +161,37 @@ Parse.Cloud.define("fetchOpponentsAddResult", function(request, response) {
 Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 	
 	//get player IDs
-	var player1ID = request.object.get("Player1ID"); //get player 1 ID
-	var player2ID = request.object.get("Player2ID"); //get player 1 ID
+	var victorID = request.object.get("VictorID"); //get player 1 ID
+	var loserID = request.object.get("LoserID"); //get player 1 ID
 	
-	var p1score = request.object.get("P1Score"); //get player 1 Score
-	var p2score = request.object.get("P2Score"); //get player 1 Score
-	console.log("Player 1 Score: " + p1score);
-	console.log("Player 2 Score: " + p2score);
-	//calculate victor
-	if (p1score > p2score){
-		var victor = player1ID;
-		var loser = player2ID;
-	} else {
-		var victor = player2ID;
-		var loser = player1ID;
-	}
-	console.log("Victor: " + JSON.stringify(victor)); //calculate victor
-	console.log("Loser: " + JSON.stringify(loser)); //calculate victor
+	var victorScore = request.object.get("VictorScore"); //get player 1 Score
+	var loserScore = request.object.get("LoserScore"); //get player 1 Score
+	console.log("Victors' Score: " + victorScore);
+	console.log("Losers' Score: " + loserScore);
 	
 	//set Ranks
 	var VictorRank = 0; 
 	var LoserRank = 0;
 	
-	//get rankings based on ID
-	var Leaderboard1 = Parse.Object.extend("LeaderBoard");
-	var queryVictorRank = new Parse.Query(Leaderboard1);
-	queryVictorRank.equalTo("playerID", victor); //get victor rank
+	//set ranking queries
+	var Leaderboard = Parse.Object.extend("LeaderBoard");
+	var queryVictorRank = new Parse.Query(Leaderboard);
+	queryVictorRank.equalTo("playerID", victorID); //get victor rank
+	var queryLoserRank = new Parse.Query(Leaderboard);
+	queryLoserRank.equalTo("playerID", loserID); //get loser rank
 	
-	var Leaderboard2 = Parse.Object.extend("LeaderBoard");
-	var queryLoserRank = new Parse.Query(Leaderboard2);
-	queryLoserRank.equalTo("playerID", loser); //get loser rank
-	
+	//query ranks based on ID
+	//calculate victor rank
 	queryVictorRank.find().then(function(victorRankObj) {
 		victorRanking = victorRankObj;
+		console.log(victorRankObj);
+		console.log(victorRanking);
 		victorRank = victorRanking[0].get("Ranking"); //sets victor rank
 		console.log("Victor Rank: " + victorRank); //Success message
 	}, function(error) {
 		console.error("Error: Victor Rank could not be fetched"); //error message
 		response.error("Result not recorded");
+	//calculate loser Rank
 	}).then(function(query2) {
 		return queryLoserRank.find();
 	}).then(function(loserRankObj) {
@@ -208,12 +201,14 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 	}, function(error) {
 		console.error("Error: Loser Rank could not be fetched"); //error message
 		response.error("Result not recorded");
+		//Update Leaderboard only if loser Rank is worse than victor rank
 	}).then(function(updateLeaderboard) {
 		if (victorRank < loserRank) { //checks if leaderboard needs to be updated
 			console.log("Leaderboard Not required to be updated");
 			response.success();
 		}
 		else {
+			//update Leaderboard
 			console.log("Leaderboard to be updated");
 			var newRank = loserRank; //stores the victors new rank
 			var Leaderboard3 = Parse.Object.extend("LeaderBoard");
@@ -222,7 +217,7 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 			queryUpdateLeaderboard.greaterThanOrEqualTo("Ranking", loserRank);
 			queryUpdateLeaderboard.lessThan("Ranking", victorRank);
 			queryUpdateLeaderboard.find().then(function(results) {
-			//update their rank
+			//update their ranks
 				for (var i = 0; i < results.length; i++) {
 					var oldRank = results[i].get("Ranking");
 					var updateRank = results[i].set("Ranking", oldRank + 1);
@@ -475,25 +470,19 @@ Parse.Cloud.define("newsfeedMatchScore", function(request, response) {
 	var query = new Parse.Query("MatchScore");
 	query.limit(20);
 	query.descending("updatedAt");
-	query.include("Player1ID");
-	query.include("Player2ID");
+	query.include("VictorID");
+	query.include("LoserID");
 	query.find({
 		success: function(MatchScoreResults) {
 			var MatchScoreArray = []
 			for (i=0; i<MatchScoreResults.length; i++){
+				var victorName = MatchScoreResults[i].get("VictorID").get("displayName");
+				var loserName = MatchScoreResults[i].get("LoserID").get("displayName");
+				var victorScore = MatchScoreResults[i].get("VictorScore");
+				var loserScore = MatchScoreResults[i].get("LoserScore");
 			
-				var p1Name = MatchScoreResults[i].get("Player1ID").get("displayName");
-				var p2Name = MatchScoreResults[i].get("Player2ID").get("displayName");
-				var p1Score = MatchScoreResults[i].get("P1Score");
-				var p2Score = MatchScoreResults[i].get("P2Score");
 				
-				if (p1Score < p2Score){
-					var matchOutcome = " lost against ";
-				} else {
-					var matchOutcome = " won against ";
-				}
-				
-				var content = p1Name + matchOutcome + p2Name + " : " + p1Score + "-" + p2Score;
+				var content = victorName + " won against " + loserName + " : " + victorScore + "-" + loserScore;
 				var contentDate = MatchScoreResults[i].updatedAt;
 				var userThumbnail = "img/squashResultTumbnail.jpg";
 				var type = "matchScore";
