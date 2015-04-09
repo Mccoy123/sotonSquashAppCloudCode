@@ -219,35 +219,32 @@ Parse.Cloud.define("displayActiveChallenges", function(request, response) {
 				var challengeObbID = activeChallengesArrayRaw[i].id;
 				var challengeAccepted = activeChallengesArrayRaw[i].get("Accepted");
 				var oppnentInfo = "";
+				var opponentName = "";
 				if (activeChallengesArrayRaw[i].get("ChallengerID").id == Parse.User.current().id){
 					var opponentObj = activeChallengesArrayRaw[i].get("ChallengeeID"); //gets opponents user object
-					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
-					var opponentId = opponentObj.id; //gets the id of your opponent
 					var challengeDetails = "You challenged " + opponentName + " to a match"
-					if (challengeAccepted == true){
-						var challengeStatusMessage = "Challenge Accepted " + challengeUpdatedDate;
-						var challengeStatus = "challengeAccepted"; //sets the challenge status used for formatting table
-						var oppnentInfo = opponentObj.get("email"); //gets the display name of your opponent
-					}
-					else {
-						var challengeStatusMessage = "Awaiting reply from opponent (Challenge sent  " + challengeUpdatedDate + ")";
-						var challengeStatus = "awaitingResponseOpponent"; //sets the challenge status used for formatting table
-					}
-				}
+					var challengeAcceptence = "Challenge Accepted ";
+					var notAcceptedMessage = "Awaiting reply from opponent (Challenge sent  ";
+					var userStatus ="Opponent"
+				} 
 				else {
 					var opponentObj = activeChallengesArrayRaw[i].get("ChallengerID"); //gets opponents user object
-					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
-					var opponentId = opponentObj.id; //gets the id of your opponent
 					var challengeDetails = opponentName + " challenged you to a match"
-					if (challengeAccepted == true){
-						var challengeStatusMessage = "You Accepted " + challengeUpdatedDate;
-						var challengeStatus = "challengeAccepted"; //sets the challenge status used for formatting table
-						var oppnentInfo = opponentObj.get("email"); //gets the display name of your opponent
-					}
-					else {
-						var challengeStatusMessage = "You have not yet replied (Challenge sent  " + challengeUpdatedDate + ")";
-						var challengeStatus = "awaitingResponseUser"; //sets the challenge status used for formatting table
-					}
+					var challengeAcceptence = "You Accepted ";
+					var notAcceptedMessage = "You have not yet replied (Challenge sent  ";
+					var userStatus ="User"
+				}
+				opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+				var opponentId = opponentObj.id; //gets the id of your opponent
+				if (challengeAccepted == true){
+					var challengeStatusMessage = challengeAcceptence + challengeUpdatedDate;
+					var challengeStatus = "challengeAccepted"; //sets the challenge status used for formatting table
+					var opponentemail = opponentObj.get("email"); //gets the email of your opponent
+					var oppnentInfo = "Contact Opponent to arrange a date and book a court. <br /> Opponents Email: " + opponentemail + " ";
+				}
+				else {
+					var challengeStatusMessage = notAcceptedMessage + challengeUpdatedDate + ")";
+					var challengeStatus = "awaitingResponse" + userStatus ; //sets the challenge status used for formatting table
 				}
 				//set up array object
 				//store in array
