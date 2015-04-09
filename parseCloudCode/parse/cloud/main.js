@@ -286,18 +286,51 @@ Parse.Cloud.define("fetchOpponents", function(request, response) {
 		queryFindOpponents.include("playerID");
 		return queryFindOpponents.find();
 	}).then(function(opponentArrayRaw) {
-		var opponentArray = []
-		for(var i = 0; i < opponentArrayRaw.length; i++) {
-			var oppObj = opponentArrayRaw[i].get("playerID");; //Opponents user object
-			var text = oppObj.get("displayName"); //opponents displayName
-			var value = oppObj.id; //Opponents user objectID
-			var opponentArrayObj = {text: text, value: value};
-			//need to work out validation to not add object to array if an active challenge already exists.
-			opponentArray[opponentArray.length] = opponentArrayObj;
-			console.log(opponentArray[i]);
-		}
-		console.log(opponentArray);
-		response.success(opponentArray);
+		Parse.Cloud.run('allActiveChallengesArray', {}, {
+			success: function(allActiveChallengesArray) {
+				var activeChallengeOpponentArray = [];
+				for(var i = 0; i < allActiveChallengesArray.length; i++) {
+					var challengeeUserObb = allActiveChallengesArray[i].get("ChallengeeID");
+					var challengerUserObb = allActiveChallengesArray[i].get("ChallengerID");
+					if (challengeeUserObb.id == Parse.User.current().id){
+						console.log("Opponent is Challenger");
+						var oppId = challengerUserObb.id; 
+					}
+					else {
+						console.log("Opponent is Challengee");
+						var oppId = challengeeUserObb.id;
+					}
+					var activeChallengeOpponentObj = oppId;
+					activeChallengeOpponentArray[activeChallengeOpponentArray.length] = activeChallengeOpponentObj;
+					console.log(activeChallengeOpponentArray[i]);
+				}
+				console.log(activeChallengeOpponentArray); //array of usersIds user has an open challenge against
+				var opponentArray = [];
+				for(var i = 0; i < opponentArrayRaw.length; i++) {
+					console.log("test");
+					var oppObj = opponentArrayRaw[i].get("playerID");; //Opponents user object
+					console.log(oppObj);
+					if (activeChallengeOpponentArray.indexOf(oppObj.id) == -1){
+						console.log("test2");
+						var text = oppObj.get("displayName"); //opponents displayName
+						var value = oppObj.id; //Opponents user objectID
+						var opponentArrayObj = {text: text, value: value};
+						//need to work out validation to not add object to array if an active challenge already exists.
+						opponentArray[opponentArray.length] = opponentArrayObj;
+						console.log(opponentArray[i]);
+					}
+					else {
+						console.log("User already has an open challenge against user, remove do not add to opponentArray");
+					}
+				}
+				console.log(opponentArray);
+				response.success(opponentArray);
+			},
+			error: function() {
+				console.error("Active Challenges could not retrieved");
+				response.error("Active Challenges could not retrieved");
+			}
+		});
 	})
 });
 
