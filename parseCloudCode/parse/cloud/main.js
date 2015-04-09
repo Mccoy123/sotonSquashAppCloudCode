@@ -11,6 +11,96 @@ response.success("Doms Cloud Code");
 var oauth = require('cloud/oauth.js');
 var sha = require('cloud/sha1.js');
 
+//general
+Parse.Cloud.define("allActiveChallengesArray", function(request, response) {
+	var Challenges = Parse.Object.extend("Challenges");
+	var userChallengee = new Parse.Query(Challenges);
+	userChallengee.equalTo("ChallengeeID", Parse.User.current()); //only returns challenges specific to the current user part1
+	//retrieve challengees where the user is the challenger	
+	var userChallenger = new Parse.Query(Challenges);
+	userChallenger.equalTo("ChallengerID", Parse.User.current()); //only returns challenges specific to the current user part2
+	//main query
+	var queryActiveChallenges = new Parse.Query(Challenges);
+	queryActiveChallenges = Parse.Query.or(userChallengee, userChallenger); //returns all challenges involving current user
+	queryActiveChallenges.equalTo("Active", true); //only returns active challenges
+	queryActiveChallenges.include("ChallengerID"); //includes the challenger user object
+	queryActiveChallenges.include("ChallengeeID"); //includes the challengee user object
+	queryActiveChallenges.find({
+		success: function(allActiveChallengesArray) {
+			response.success(allActiveChallengesArray);
+		},
+		error: function() {
+			console.error("Challenge information could not be retrieved");
+			response.error("Challenge information could not retrieved");
+		}
+	});
+});
+
+//gets a specific user object based on id
+Parse.Cloud.define("getUserObject", function(request, response) {
+	var User = Parse.Object.extend("User");
+	var queryUser = new Parse.Query(User);
+	var userID = request.params.userID;
+	console.log(userID);
+	queryUser.get(userID, {
+	  success: function(userObjResult) {
+		// The object was retrieved successfully.
+		userObj = userObjResult;
+		console.log("test2a");
+		console.log(userObj);
+		response.success(userObj);
+	  },
+	  error: function(object, error) {
+		console.error("user object could not be retrieved");
+		response.error("user object could not be retrieved");
+	  }
+	});
+});
+
+//awards a walkover 3-0 victory to a user
+Parse.Cloud.define("awardWalkover", function(request, response) {
+	var MatchScore = Parse.Object.extend("MatchScore");
+	var matchScore = new MatchScore(); //create a new matchScore object
+	//get the victor and loser IDs
+	var VictorObbID = request.params.VictorID;
+	var LoserObbID = request.params.LoserID;
+	//get the victor and loser objects
+	Parse.Cloud.run('getUserObject', {userID: VictorObbID}, {
+		success: function(VictorObject) {
+			var VictorObj = VictorObject;
+			Parse.Cloud.run('getUserObject', {userID: LoserObbID}, {
+				success: function(LoserObject) {
+					var LoserObj = LoserObject;
+					// set scores
+					var VictorScore = "3";
+					var LoserScore = "0";
+					//save the result
+					matchScore.save({VictorID: VictorObj, LoserID: LoserObj, VictorScore: VictorScore, LoserScore: LoserScore}, {
+						success: function(object) {
+							console.log("Score Successfully Added"); //User success message
+							response.success("Challenge Declined Opponent awarded 3-0 Walkover");
+						},
+						error: function(model, error) {
+							console.error("Challenge could not be declined as a new result could not be added");
+							response.error("Challenge could not be declined as a new result could not be added");
+						}
+					});
+				},
+				error: function() {
+					console.error("Loser Object could not retrieved");
+					response.error("Loser Object could not retrieved");
+				}
+			});
+		},
+		error: function() {
+			console.error("Challenge information could not be retrieved");
+			response.error("Victor Object could not retrieved");
+		}
+	});
+});
+
+//end of general functions
+
 //leaderboard
 Parse.Cloud.define("fetchLeaderboard", function(request, response) {
 	var Leaderboard = Parse.Object.extend("LeaderBoard");
@@ -54,21 +144,21 @@ Parse.Cloud.define("declineChallenge", function(request, response) {
 			challengeObject.save(null, {
 				success: function() {
 					//record walkover result
-					var MatchScore = Parse.Object.extend("MatchScore");
-					var matchScore = new MatchScore(); //create a new matchScore object
-					var VictorID = challengeObject.get("ChallengerID");
-					var LoserID = challengeObject.get("ChallengeeID");
-					var VictorScore = "3";
-					var LoserScore = "0";
-					//save the result
-					matchScore.save({VictorID: VictorID, LoserID: LoserID, VictorScore: VictorScore, LoserScore: LoserScore}, {
-						success: function(object) {
+					var VictorObj = challengeObject.get("ChallengerID"); //victor as challengee has declined the challenge
+					var VictorID = VictorObj.id;
+					var LoserObj = challengeObject.get("ChallengeeID"); //loser as they declined the challenge
+					var LoserID = LoserObj.id;
+					console.log(LoserID);
+					console.log(VictorID);
+					Parse.Cloud.run('awardWalkover', {VictorID: VictorID, LoserID: LoserID }, {
+						success: function(walkoverResponse) {
+							console.log(walkoverResponse);
 							console.log("Score Successfully Added"); //User success message
 							response.success("Challenge Declined Opponent awarded 3-0 Walkover");
 						},
-						error: function(model, error) {
-							console.error("Challenge could not be declined as a new result could not be added");
-							response.error("Challenge could not be Accepted check internet connection");
+						error: function() {
+							console.error("Challenge information could not be retrieved");
+							response.error("Challenge information could not retrieved");
 						}
 					});
 				},
@@ -119,20 +209,8 @@ Parse.Cloud.define("newChallenges", function(request, response) {
 });
 
 //Display Open Active Challenges
-Parse.Cloud.define("activeChallenges", function(request, response) {
-	var Challenges = Parse.Object.extend("Challenges");
-	var userChallengee = new Parse.Query(Challenges);
-	userChallengee.equalTo("ChallengeeID", Parse.User.current()); //only returns challenges specific to the current user part1
-	//retrieve challengees where the user is the challenger	
-	var userChallenger = new Parse.Query(Challenges);
-	userChallenger.equalTo("ChallengerID", Parse.User.current()); //only returns challenges specific to the current user part2
-	//main query
-	var queryActiveChallenges = new Parse.Query(Challenges);
-	queryActiveChallenges = Parse.Query.or(userChallengee, userChallenger); //returns all challenges involving current user
-	queryActiveChallenges.equalTo("Active", true); //only returns active challenges
-	queryActiveChallenges.include("ChallengerID"); //includes the challenger user object
-	queryActiveChallenges.include("ChallengeeID"); //includes the challengee user object
-	queryActiveChallenges.find({
+Parse.Cloud.define("displayActiveChallenges", function(request, response) {
+	Parse.Cloud.run('allActiveChallengesArray', {}, {
 		success: function(activeChallengesArrayRaw) {
 			var activeChallengesArray = [];
 			for(var i = 0; i < activeChallengesArrayRaw.length; i++) {
@@ -189,7 +267,6 @@ Parse.Cloud.define("activeChallenges", function(request, response) {
 		}
 	});
 });
-
 //end of myChallenges functions
 
 //challengeOpponentFunctions
@@ -394,12 +471,57 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 		
 //User opt out of leaderboard
    Parse.Cloud.define("leaveLeaderboard", function(request, response) {
-		//set the leaderboard flag to true
+		//set the leaderboard flag to false
 	    var currentUser = Parse.User.current();
 	    currentUser.set("Leaderboard", false); //sets the leaderboard flag to false indicating they are not in the leaderboard
 	    currentUser.save();
-		
-		//remove user to the leaderboard
+		//close open challenges
+		Parse.Cloud.run('allActiveChallengesArray', {}, {
+			success: function(activeChallengesArrayRaw) {
+				for (var i = 0; i < activeChallengesArrayRaw.length; i++) {
+					var activeChallengesItem = activeChallengesArrayRaw[i];
+					if (activeChallengesItem.get("Accepted") == false){
+						activeChallengesItem.set("Active", false); //cancel challenge dont award walkover
+						activeChallengesItem.save();
+					} 
+					else {
+						activeChallengesItem.set("Active", false); //cancel challenge dont award walkover
+						activeChallengesItem.save();
+						//give opponent walkover
+						//establish the victor and loser
+						if (activeChallengesItem.get("ChallengeeID") == Parse.User.current()){
+							var VictorObj = activeChallengesItem.get("ChallengerID"); //victor as challengee has declined the challenge
+							var VictorID = VictorObj.id;
+							var LoserObj = activeChallengesItem.get("ChallengeeID"); //loser as they declined the challenge
+							var LoserID = LoserObj.id;
+						} 
+						else {
+							var VictorObj = activeChallengesItem.get("ChallengeeID"); //victor as challengee has declined the challenge
+							var VictorID = VictorObj.id;
+							var LoserObj = activeChallengesItem.get("ChallengerID"); //loser as they declined the challenge
+							var LoserID = LoserObj.id;
+						}
+						//record walkover result
+						Parse.Cloud.run('awardWalkover', {VictorID: VictorID, LoserID: LoserID }, {
+							success: function(walkoverResponse) {
+								console.log(walkoverResponse);
+								console.log("Score Successfully Added"); //User success message
+								response.success("Challenge Declined Opponent awarded 3-0 Walkover");
+							},
+							error: function() {
+								console.error("Challenge information could not be retrieved");
+								response.error("Challenge information could not retrieved");
+							}
+						});
+					}
+				}
+			},
+			error: function() {
+				console.error("Challenge information could not be retrieved");
+				response.error("Challenge information could not retrieved");
+			}
+		});
+		//remove user from the leaderboard
 	    var Leaderboard = Parse.Object.extend("LeaderBoard");		
 		var query = new Parse.Query(Leaderboard);
 		query.equalTo("playerID", currentUser); //returns all objects in leaderboard intentionally left as not 0 as could be used for ghosting players
