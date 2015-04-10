@@ -129,6 +129,7 @@ Parse.Cloud.define("fetchLeaderboard", function(request, response) {
 		}
 	});
 });
+//end of leaderboard functions
 
 //MyChallenges Functions
 //decline challenges
@@ -330,6 +331,7 @@ Parse.Cloud.define("fetchOpponents", function(request, response) {
 		});
 	})
 });
+//end of challenge Opponent Functions
 
 //AddResult Function
 //fetch Opponents
@@ -461,6 +463,7 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 		}
 	});
 });
+//end of add result functions
 
 //My Profile functions
 //User opt in of leaderboard
@@ -497,7 +500,6 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 			response.error("User could not be added to the leaderboard"); //sent back to client if an eror occurs
 		});
 	});
-//User opt in of leaderboard
 		
 //User opt out of leaderboard
    Parse.Cloud.define("leaveLeaderboard", function(request, response) {
@@ -592,7 +594,43 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 			response.error("Error: you have not been deleted from the leaderboard");
 		});
 	});
-//end of User opt out of leaderboard
+
+//get Player Stats
+	//simple player stats will be expanded later
+	Parse.Cloud.define("playerStats", function(request, response) {
+		var MatchScore = Parse.Object.extend("MatchScore");		
+		var queryMatchScore = new Parse.Query(MatchScore);
+		//user total wins
+		var totalWins = 0;
+		var totalLosses = 0;
+		var userVictories = new Parse.Query(MatchScore);
+		userVictories.equalTo("VictorID", Parse.User.current()); //only returns matches specific to the current user
+		userVictories.count().then(function(countVictories) {
+			totalWins = countVictories;
+			return totalWins;
+		}).then(function(queryLosses) {
+			var userLosses = new Parse.Query(MatchScore);
+			userLosses.equalTo("LoserID", Parse.User.current()); //only returns matches specific to the current user
+			return userLosses.count();
+		}).then(function(countLosses) {
+			var totalLosses = countLosses;
+			return totalLosses;
+		}).then(function(totalLosses) {
+			console.log(totalLosses);
+			console.log(totalLosses);
+			//user total losses
+			
+			//Total matches played
+			totalMatches = totalWins + totalLosses;
+			//set up response object
+			var playerStatsObj = {totalWins: totalWins, totalLosses: totalLosses, totalMatches: totalMatches}
+			response.success(playerStatsObj);
+		});
+		
+		
+	});
+	
+//end of My profile functions
 
 //newsfeed
 Parse.Cloud.define("newsfeed", function(request, response) {
