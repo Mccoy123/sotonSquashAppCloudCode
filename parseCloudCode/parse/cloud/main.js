@@ -220,36 +220,41 @@ Parse.Cloud.define("displayActiveChallenges", function(request, response) {
 				var challengeObbID = activeChallengesArrayRaw[i].id;
 				var challengeAccepted = activeChallengesArrayRaw[i].get("Accepted");
 				var oppnentInfo = "";
+				var acceptedStatues ="";
 				var opponentName = "";
 				if (activeChallengesArrayRaw[i].get("ChallengerID").id == Parse.User.current().id){
 					var opponentObj = activeChallengesArrayRaw[i].get("ChallengeeID"); //gets opponents user object
-					var challengeDetails = "You challenged " + opponentName + " to a match"
-					var challengeAcceptence = "Challenge Accepted ";
-					var notAcceptedMessage = "Awaiting reply from opponent (Challenge sent  ";
-					var userStatus ="Opponent"
+					opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+					var challengeDetails = opponentName + " (" + challengeUpdatedDate + ")";
+					var challengeAcceptence = "Your Match Request has been been accepted by ";
+					var notAcceptedMessage = " Your Match Request has not yet been accepted by ";
+					var userStatus ="Opponent";
 				} 
 				else {
 					var opponentObj = activeChallengesArrayRaw[i].get("ChallengerID"); //gets opponents user object
-					var challengeDetails = opponentName + " challenged you to a match"
-					var challengeAcceptence = "You Accepted ";
-					var notAcceptedMessage = "You have not yet replied (Challenge sent  ";
-					var userStatus ="User"
+					opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+					//var challengeDetails = opponentName + " challenged you to a match "
+					var challengeDetails = opponentName + "'s match request (" + challengeUpdatedDate + ")";
+					var challengeAcceptence = "You have Accepted ";
+					var notAcceptedMessage = "You have not yet replied to ";
+					var userStatus ="User";
 				}
-				opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
+				
 				var opponentId = opponentObj.id; //gets the id of your opponent
 				if (challengeAccepted == true){
-					var challengeStatusMessage = challengeAcceptence + challengeUpdatedDate;
+					var challengeStatusMessage = challengeAcceptence + challengeDetails;
 					var challengeStatus = "challengeAccepted"; //sets the challenge status used for formatting table
 					var opponentemail = opponentObj.get("email"); //gets the email of your opponent
-					var oppnentInfo = "Contact Opponent to arrange a date and book a court. <br /> Opponents Email: " + opponentemail + " ";
+					var oppnentInfo = "Contact them to arrange a date and book a court At: <br /> " + opponentemail;
 				}
 				else {
-					var challengeStatusMessage = notAcceptedMessage + challengeUpdatedDate + ")";
-					var challengeStatus = "awaitingResponse" + userStatus ; //sets the challenge status used for formatting table
+					
+					var challengeStatusMessage = notAcceptedMessage + challengeDetails ;
+					var challengeStatus = "awaitingResponse" + userStatus; //sets the challenge status used for formatting table
 				}
 				//set up array object
 				//store in array
-				var activeChallengesArrayObj = {challengeDetails: challengeDetails, challengeStatus: challengeStatus, challengeStatusMessage: challengeStatusMessage, oppnentInfo: oppnentInfo, challengeObbID: challengeObbID, challengeUpdatedDateRaw: challengeUpdatedDateRaw }
+				var activeChallengesArrayObj = {challengeStatus: challengeStatus, challengeStatusMessage: challengeStatusMessage, oppnentInfo: oppnentInfo, challengeObbID: challengeObbID, challengeUpdatedDateRaw: challengeUpdatedDateRaw };
 				activeChallengesArray[activeChallengesArray.length] = activeChallengesArrayObj;
 				console.log(activeChallengesArrayObj);
 			}
@@ -336,7 +341,7 @@ Parse.Cloud.define("fetchOpponents", function(request, response) {
 //AddResult Function
 //fetch Opponents
 Parse.Cloud.define("fetchOpponentsAddResult", function(request, response) {
-	console.log("hello");
+	console.log("Start Fetch opponents Function");
 	var Challenges = Parse.Object.extend("Challenges");
 	//retrieve challengees where the user is the challengee	
 	var userChallengee = new Parse.Query(Challenges);
@@ -353,27 +358,34 @@ Parse.Cloud.define("fetchOpponentsAddResult", function(request, response) {
 	queryChallenges.include("ChallengeeID"); //includes the challengee user object
 	queryChallenges.find({
 		success: function(openChallengesArrayRaw) {
+			console.log("QueryChallenges Successfully completed");
+			console.log("Query Challenges Returns: " + openChallengesArrayRaw );
 			var openChallengesArray = [];
 			for(var i = 0; i < openChallengesArrayRaw.length; i++) {
 				var challengeObbID = openChallengesArrayRaw[i].id;
 				var challengeSentDate = openChallengesArrayRaw[i].createdAt;
 				if (openChallengesArrayRaw[i].get("ChallengerID").id == Parse.User.current().id){
+					console.log("Current User is not challenger");
 					var opponentObj = openChallengesArrayRaw[i].get("ChallengeeID"); //gets opponents user object
 					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
 					var opponentId = opponentObj.id; //gets the id of your opponent
 				}
 				else {
+					console.log("Current User is the challenger");
 					var opponentObj = openChallengesArrayRaw[i].get("ChallengerID"); //gets opponents user object
 					var opponentName = opponentObj.get("displayName"); //gets the display name of your opponent
 					var opponentId = opponentObj.id; //gets the id of your opponent
 				}
+				console.log("Opponent ID = " + opponentId);
 				var openChallengesArrayObj = {opponentName: opponentName, opponentId: opponentId, challengeObbID: challengeObbID, challengeSentDate: challengeSentDate };
 				openChallengesArray[openChallengesArray.length] = openChallengesArrayObj;
 				console.log(openChallengesArrayObj);
 			}
+			console.log("For Loop of openChallengeArray complete");
 			openChallengesArray.sort(function(obj1, obj2){
 				return obj2.challengeSentDate - obj1.challengeSentDate; //sort in ascending order so newest first
 			});
+			console.log("OpenChallengeArraySorted");
 			console.log(openChallengesArray);
 			response.success(openChallengesArray);
 		},
@@ -799,6 +811,7 @@ Parse.Cloud.define("newsfeedMatchScore", function(request, response) {
 	query.find({
 		success: function(MatchScoreResults) {
 			var MatchScoreArray = []
+			console.log(MatchScoreResults);
 			for (i=0; i<MatchScoreResults.length; i++){
 				var victorName = MatchScoreResults[i].get("VictorID").get("displayName");
 				var loserName = MatchScoreResults[i].get("LoserID").get("displayName");
