@@ -477,7 +477,7 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 });
 //end of add result functions
 
-//My Profile functions
+//Settings functions
 //User opt in of leaderboard
    Parse.Cloud.define("joinLeaderboard", function(request, response) {
 		//set the leaderboard flag to true
@@ -638,11 +638,24 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 			var playerStatsObj = {totalWins: totalWins, totalLosses: totalLosses, totalMatches: totalMatches}
 			response.success(playerStatsObj);
 		});
-		
-		
+	});
+//update displayName
+	Parse.Cloud.define("updateDisplayName", function(request, response) {
+		var newDisplayName = request.params.newDisplayName;
+		console.log(newDisplayName);
+		var currentUser = Parse.User.current();
+	    currentUser.set("displayName", newDisplayName); //sets the leaderboard flag to false indicating they are not in the leaderboard
+	    currentUser.save(null, {
+			success: function(currentUser) {
+				response.success("Your name has been updated");
+			},
+			error: function() {
+				response.error("Displayname could not be updated. Please try again");
+			}
+		});
 	});
 	
-//end of My profile functions
+//end of Settings functions
 
 //newsfeed
 Parse.Cloud.define("newsfeed", function(request, response) {
