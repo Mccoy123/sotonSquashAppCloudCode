@@ -642,18 +642,34 @@ Parse.Cloud.beforeSave("MatchScore", function(request, response) {
 //update displayName
 	Parse.Cloud.define("updateDisplayName", function(request, response) {
 		var newDisplayName = request.params.newDisplayName;
-		console.log(newDisplayName);
-		var currentUser = Parse.User.current();
-	    currentUser.set("displayName", newDisplayName); //sets the leaderboard flag to false indicating they are not in the leaderboard
-	    currentUser.save(null, {
-			success: function(currentUser) {
-				response.success("Your name has been updated");
-			},
-			error: function() {
-				response.error("Displayname could not be updated. Please try again");
-			}
-		});
+		var escapeNewDisplayName = escapeHtml(newDisplayName);
+		var lengthEscapeNewDisplayName= escapeNewDisplayName.length;
+		if (lengthEscapeNewDisplayName < 21) {
+			console.log(escapeNewDisplayName);
+			var currentUser = Parse.User.current();
+			currentUser.set("displayName", escapeNewDisplayName); //sets the leaderboard flag to false indicating they are not in the leaderboard
+			currentUser.save(null, {
+				success: function(currentUser) {
+					response.success("Your name has been updated");
+				},
+				error: function() {
+					response.error("Displayname could not be updated. Please try again");
+				}
+			});
+		} else {
+			response.error("Use a shorter display name");
+		}
+		
 	});
+	//escape html function
+	function escapeHtml(unsafe) {
+		return unsafe
+			 .replace(/&/g, "&amp;")
+			 .replace(/</g, "&lt;")
+			 .replace(/>/g, "&gt;")
+			 .replace(/"/g, "&quot;")
+			 .replace(/'/g, "&#039;");
+	}
 	
 //end of Settings functions
 
